@@ -84,11 +84,11 @@ GS_LOWER_BOUND = -0.50
 GS_UPPER_BOUND = 2.0
 
 DEFAULT_PRODUCTS = [
-    Product("Spark", PricingType.PER_USER, 14.74),
-    Product("Grants", PricingType.FLAT_FEE, 50514.70),
+    Product("Spark", PricingType.PER_USER, 0.0),
+    Product("Grants", PricingType.FLAT_FEE, 0.0),
 ]
-DEFAULT_FEES = [Fee("Custom Integration / Migration", 5000.00)]
-DEFAULT_USERS = 2138
+DEFAULT_FEES = [Fee("Custom Integration / Migration", 0.0)]
+DEFAULT_USERS = 0
 
 SCENARIO_DEFAULTS: list[ScenarioConfig] = [
     ScenarioConfig("1 Yr Baseline", term=1),
@@ -519,7 +519,7 @@ with st.sidebar:
 
     if growth == "Flat":
         flat_users = st.number_input(
-            "Users (all years)", value=DEFAULT_USERS, step=100, min_value=1
+            "Users (all years)", value=DEFAULT_USERS, step=100, min_value=0
         )
         user_ramp = [flat_users] * MAX_TERM
     else:
@@ -530,7 +530,7 @@ with st.sidebar:
             with col_a if yr % 2 == 0 else col_b:
                 ramp_values.append(
                     st.number_input(
-                        f"Yr {yr + 1}", value=DEFAULT_USERS, step=100, min_value=1, key=f"ramp_{yr}"
+                        f"Yr {yr + 1}", value=DEFAULT_USERS, step=100, min_value=0, key=f"ramp_{yr}"
                     )
                 )
         user_ramp = pad_to_term(
@@ -715,14 +715,14 @@ for scene_idx, col in enumerate(scenario_cols):
             variable = st.toggle("Variable uplifts", value=False, key=f"vt_{scene_idx}")
             if not variable:
                 flat_uplift = (
-                    st.slider("Flat Uplift %", UPLIFT_MIN, UPLIFT_MAX, 5, key=f"fu_{scene_idx}") / 100
+                    st.slider("Flat Uplift %", UPLIFT_MIN, UPLIFT_MAX, 0, key=f"fu_{scene_idx}") / 100
                 )
                 uplifts = [flat_uplift] * term
             else:
                 for yr_idx in range(term):
                     uplifts.append(
                         st.slider(
-                            f"Yr {yr_idx + 1} %", UPLIFT_MIN, UPLIFT_MAX, 5,
+                            f"Yr {yr_idx + 1} %", UPLIFT_MIN, UPLIFT_MAX, 0,
                             key=f"vu_{scene_idx}_{yr_idx}",
                         ) / 100
                     )
