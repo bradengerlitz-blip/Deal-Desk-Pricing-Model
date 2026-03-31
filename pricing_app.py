@@ -849,35 +849,32 @@ if num_scenarios > 1:
                 "Saving (%)": total_saving / total_baseline_billed if total_baseline_billed else 0,
             })
 
-            left_col, right_col = st.columns(2)
-            with left_col:
-                st.caption("Per-User Blended Rate")
-                st.dataframe(
-                    pd.DataFrame(per_user_rows).style.format({
-                        "Blended $/User": "${:,.2f}",
-                        f"Savings vs. {baseline['Label']}": "${:,.2f}",
-                        "Saving %": "{:.2%}",
-                    }),
-                    use_container_width=True, hide_index=True,
-                )
+            st.caption("Per-User Blended Rate")
+            st.dataframe(
+                pd.DataFrame(per_user_rows).style.format({
+                    "Blended $/User": "${:,.2f}",
+                    f"Savings vs. {baseline['Label']}": "${:,.2f}",
+                    "Saving %": "{:.2%}",
+                }),
+                use_container_width=True, hide_index=True,
+            )
 
-            with right_col:
-                st.caption("Billed Savings (Nominal)")
-                billed_df = pd.DataFrame(billed_rows)
+            st.caption("Billed Savings (Nominal)")
+            billed_df = pd.DataFrame(billed_rows)
 
-                def highlight_total(row: pd.Series) -> list[str]:
-                    style = "background:#F1F5F9;font-weight:600"
-                    return [style] * len(row) if row["Year"] == "Total" else [""] * len(row)
+            def highlight_total(row: pd.Series) -> list[str]:
+                style = "background:#F1F5F9;font-weight:600"
+                return [style] * len(row) if row["Year"] == "Total" else [""] * len(row)
 
-                st.dataframe(
-                    billed_df.style.apply(highlight_total, axis=1).format({
-                        f"{baseline['Label']}": "${:,.2f}",
-                        f"{target_scenario['Label']}": "${:,.2f}",
-                        "Saving ($)": "${:,.2f}",
-                        "Saving (%)": "{:.2%}",
-                    }),
-                    use_container_width=True, hide_index=True,
-                )
+            st.dataframe(
+                billed_df.style.apply(highlight_total, axis=1).format({
+                    f"{baseline['Label']}": "${:,.2f}",
+                    f"{target_scenario['Label']}": "${:,.2f}",
+                    "Saving ($)": "${:,.2f}",
+                    "Saving (%)": "{:.2%}",
+                }),
+                use_container_width=True, hide_index=True,
+            )
 
             npv_delta = baseline["NPV"] - target_scenario["NPV"]
             if npv_delta > 0:
