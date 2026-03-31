@@ -1,5 +1,5 @@
 """
-Benevity Deal Desk Modeler — Single-file Streamlit app.
+Deal Desk Modeler — Single-file Streamlit app.
 Run: streamlit run pricing_app.py
 """
 
@@ -447,11 +447,11 @@ th { background: #F1F5F9 !important; font-weight: 600 !important; font-size: 12p
 
 # ── Page Config ──────────────────────────────────────────────────────────────
 
-st.set_page_config(page_title="Benevity Deal Desk", layout="wide")
+st.set_page_config(page_title="Deal Desk Modeler", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
 st.markdown(
     '<div class="brand">'
-    '<span class="brand-logo">Benevity</span>'
+    '<span class="brand-logo">Deal Desk</span>'
     '<span class="brand-divider"></span>'
     '<span class="brand-sub">Deal Desk Modeler</span>'
     "</div>",
