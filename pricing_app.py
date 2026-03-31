@@ -776,16 +776,16 @@ tabs = st.tabs(tab_names)
 with tabs[0]:
     st.markdown('<p class="section-header">Financial Breakdown</p>', unsafe_allow_html=True)
     st.markdown('<p class="section-sub">Year-by-year schedule per scenario</p>', unsafe_allow_html=True)
-    breakdown_cols = st.columns(num_scenarios, gap="large")
-    for idx, bc in enumerate(breakdown_cols):
-        with bc:
-            st.markdown(f"**{results[idx]['Label']}**")
-            df = results_to_dataframe(results[idx]["Schedule"])
-            fmt = {"Users": "{:,}"}
-            for col_name in df.columns:
-                if any(k in col_name for k in ("Rate", "Fee", "Billed", "ARR", "NPV", "One-Time")):
-                    fmt[col_name] = "${:,.2f}"
-            st.dataframe(df.style.format(fmt), use_container_width=True, hide_index=True)
+    for idx in range(num_scenarios):
+        st.markdown(f"**{results[idx]['Label']}**")
+        df = results_to_dataframe(results[idx]["Schedule"])
+        fmt = {"Users": "{:,}"}
+        for col_name in df.columns:
+            if any(k in col_name for k in ("Rate", "Fee", "Billed", "ARR", "NPV", "One-Time")):
+                fmt[col_name] = "${:,.2f}"
+        st.dataframe(df.style.format(fmt), use_container_width=True, hide_index=True)
+        if idx < num_scenarios - 1:
+            st.divider()
 
 # ── Tab: Comparison ──
 if num_scenarios > 1:
