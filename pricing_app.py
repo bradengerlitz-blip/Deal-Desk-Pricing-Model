@@ -53,7 +53,6 @@ class YearResult:
     arr: float
     one_time_charges: dict[str, float]
     total_billed: float
-    realized_npv: float
 
 
 @dataclass
@@ -161,7 +160,6 @@ def run_model(
     added_fee_names: list[str],
     uplifts: list[float],
     payment_days: int,
-    wacc: float,
     ledger: pd.DataFrame,
     num_years: int = MAX_TERM,
 ) -> list[YearResult]:
@@ -194,8 +192,6 @@ def run_model(
                 one_time[key] = 0.0
 
         total_billed = arr + ot_total
-        discount_years = year_idx + payment_days / 365
-        realized_npv = total_billed / (1 + wacc) ** discount_years
 
         results.append(YearResult(
             year=year_num,
@@ -205,7 +201,6 @@ def run_model(
             arr=arr,
             one_time_charges=one_time,
             total_billed=total_billed,
-            realized_npv=realized_npv,
         ))
     return results
 
@@ -217,7 +212,6 @@ def goal_seek_uplift(
     fees: list[Fee],
     added_fee_names: list[str],
     payment_days: int,
-    wacc: float,
     ledger: pd.DataFrame,
     term: int,
 ) -> float:
@@ -229,7 +223,7 @@ def goal_seek_uplift(
         schedule = run_model(
             users=users, products=products, fees=fees,
             added_fee_names=added_fee_names, uplifts=[mid] * term,
-            payment_days=payment_days, wacc=wacc, ledger=ledger, num_years=term,
+            payment_days=payment_days, ledger=ledger, num_years=term,
         )
         tcv = sum(r.total_billed for r in schedule)
         if tcv > target_tcv:
@@ -256,8 +250,6 @@ def results_to_dataframe(results: list[YearResult]) -> pd.DataFrame:
         row["ARR"] = r.arr
         for key, val in r.one_time_charges.items():
             row[key] = val
-        row["Total Billed"] = r.total_billed
-        row["Realized NPV"] = r.realized_npv
         rows.append(row)
     return pd.DataFrame(rows)
 
@@ -509,7 +501,6 @@ def _fees_from_state() -> list[Fee]:
 with st.sidebar:
     st.markdown("### Deal Setup")
     num_scenarios = st.slider("Scenarios", 2, 4, 2)
-    wacc = st.number_input("WACC (%)", value=10.0, step=1.0) / 100
 
     st.markdown("---")
     st.markdown("### Users")
@@ -701,7 +692,7 @@ for scene_idx, col in enumerate(scenario_cols):
             else:
                 solved = goal_seek_uplift(
                     target_tcv=target, users=user_ramp, products=products, fees=fees,
-                    added_fee_names=added, payment_days=payment_days, wacc=wacc,
+                    added_fee_names=added, payment_days=payment_days,
                     ledger=ledger, term=term,
                 )
 
@@ -730,19 +721,16 @@ for scene_idx, col in enumerate(scenario_cols):
         # ── Run Model ──
         full_schedule = run_model(
             users=user_ramp, products=products, fees=fees, added_fee_names=added,
-            uplifts=uplifts, payment_days=payment_days, wacc=wacc, ledger=ledger,
+            uplifts=uplifts, payment_days=payment_days, ledger=ledger,
         )
         schedule = full_schedule[:term]
 
         tcv = sum(r.total_billed for r in schedule)
-        npv = sum(r.realized_npv for r in schedule)
         ending_arr = schedule[-1].arr if schedule else 0
 
         st.metric("Nominal TCV", f"${tcv:,.0f}")
         st.markdown(
             f'<div class="stat-row">'
-            f'<div class="stat-item"><span class="stat-label">Realized NPV</span>'
-            f'<span class="stat-val">${npv:,.0f}</span></div>'
             f'<div class="stat-item"><span class="stat-label">Ending ARR</span>'
             f'<span class="stat-val">${ending_arr:,.0f}</span></div>'
             f"</div>",
@@ -754,7 +742,6 @@ for scene_idx, col in enumerate(scenario_cols):
             "Schedule": schedule,
             "FullSchedule": full_schedule,
             "TCV": tcv,
-            "NPV": npv,
             "Ending ARR": ending_arr,
             "Term": term,
             "Added Fees": added,
@@ -781,7 +768,7 @@ with tabs[0]:
         df = results_to_dataframe(results[idx]["Schedule"])
         fmt = {"Users": "{:,}"}
         for col_name in df.columns:
-            if any(k in col_name for k in ("Rate", "Fee", "Billed", "ARR", "NPV", "One-Time")):
+            if any(k in col_name for k in ("Rate", "Fee", "ARR", "One-Time")):
                 fmt[col_name] = "${:,.2f}"
         st.dataframe(df.style.format(fmt), use_container_width=True, hide_index=True)
         if idx < num_scenarios - 1:
@@ -875,12 +862,6 @@ if num_scenarios > 1:
                 }),
                 use_container_width=True, hide_index=True,
             )
-
-            npv_delta = baseline["NPV"] - target_scenario["NPV"]
-            if npv_delta > 0:
-                st.error(f"NPV impact: **−${npv_delta:,.0f}** vs. baseline")
-            else:
-                st.success(f"NPV improvement: **+${abs(npv_delta):,.0f}** vs. baseline")
 
             if comp_idx < num_scenarios - 1:
                 st.markdown("---")
