@@ -418,13 +418,17 @@ svg title, svg desc, svg text,
 .stApp, .block-container, header, [data-testid="stHeader"] { background: #FFFFFF !important; }
 .block-container { padding-top: 1rem !important; max-width: 1400px !important; }
 
-/* ── Kill focus rings / cursor ovals on all selects ── */
-[data-baseweb="select"] input { caret-color: transparent !important; }
+/* ── Kill focus rings / cursor / caret on all selects ── */
+[data-baseweb="select"] input,
+[data-baseweb="select"] [role="combobox"],
+[data-baseweb="select"] * {
+    caret-color: transparent !important;
+}
 [data-baseweb="select"] > div:focus-within {
     box-shadow: none !important; outline: none !important;
 }
 input:focus, select:focus, [data-baseweb="select"] *:focus {
-    outline: none !important;
+    outline: none !important; box-shadow: none !important;
 }
 #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
 
