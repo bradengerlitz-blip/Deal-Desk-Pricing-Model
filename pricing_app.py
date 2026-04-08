@@ -385,129 +385,208 @@ def build_export_xlsx(results: list[dict]) -> bytes:
 
 CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* ═══════════════════════════════════════════════════════════════════
+   Deal Desk Modeler — Design System
+   Inspired by Apple HIG + Slack: system fonts, generous whitespace,
+   near-invisible borders, color only for interactive elements.
+   Typography scale: 11 / 13 / 15 / 20  (4 levels only)
+   Spacing grid: multiples of 8px
+   Color: 60% white · 30% #F8FAFC · 10% #007AFF accent
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Base ── */
-.stApp, .block-container, header, [data-testid="stHeader"] { background: #FAFBFC !important; }
-html, body, h1, h2, h3, h4, h5, p, label,
-.stMarkdown, th, td, li, [class*="StyledText"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    color: #1E293B !important;
+/* ── Reset & Typography ── */
+html, body, h1, h2, h3, h4, h5, p, label, span,
+.stMarkdown, th, td, li, [class*="StyledText"], input, select, textarea {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+                 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
+
+/* ── Page ── */
+.stApp, .block-container, header, [data-testid="stHeader"] { background: #FFFFFF !important; }
 .block-container { padding-top: 2rem !important; max-width: 1400px !important; }
+#MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
 
 /* ── Brand ── */
-.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-.brand-logo {
-    font-size: 32px; font-weight: 800; letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #0066CC 0%, #0088FF 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.brand-divider { width: 2px; height: 28px; background: #CBD5E1; border-radius: 1px; }
-.brand-sub { font-size: 15px !important; font-weight: 500 !important; color: #64748B !important; letter-spacing: 0.2px; }
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.brand-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: #1D1D1F; }
+.brand-divider { width: 1px; height: 20px; background: #D2D2D7; }
+.brand-sub { font-size: 14px !important; font-weight: 400 !important; color: #86868B !important; }
 
 /* ── Metrics ── */
 [data-testid="stMetric"] {
-    background: linear-gradient(135deg, #F0F7FF 0%, #FFFFFF 100%) !important;
-    border: 1px solid #DBEAFE !important; border-left: 4px solid #0066CC !important;
-    padding: 16px 20px !important; border-radius: 10px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,.04) !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E5E5EA !important; border-left: 3px solid #007AFF !important;
+    padding: 16px 20px !important; border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
 }
-[data-testid="stMetricValue"], [data-testid="stMetricValue"] div { font-size: 26px !important; font-weight: 700 !important; color: #0066CC !important; }
-[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] div { font-size: 11px !important; font-weight: 600 !important; color: #64748B !important; text-transform: uppercase !important; letter-spacing: 0.8px !important; }
+[data-testid="stMetricValue"], [data-testid="stMetricValue"] div {
+    font-size: 24px !important; font-weight: 600 !important; color: #1D1D1F !important;
+    letter-spacing: -0.3px !important;
+}
+[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] div {
+    font-size: 11px !important; font-weight: 600 !important; color: #86868B !important;
+    text-transform: uppercase !important; letter-spacing: 0.6px !important;
+}
 
-/* ── Sidebar — pale blue theme ── */
-[data-testid="stSidebar"] { background: #EFF6FF !important; border-right: 1px solid #DBEAFE !important; }
-[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top: 1.2rem !important; }
+/* ═══ Sidebar ═══ */
+[data-testid="stSidebar"] {
+    background: #F8FAFC !important; border-right: 1px solid #F0F0F5 !important;
+}
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding: 24px 16px !important; }
+
+/* Section headers */
 [data-testid="stSidebar"] .stMarkdown h3 {
-    font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase !important;
-    letter-spacing: 1.2px !important; color: #3B82F6 !important; margin: 4px 0 6px 0 !important;
-    padding: 0 !important;
+    font-size: 11px !important; font-weight: 600 !important; text-transform: uppercase !important;
+    letter-spacing: 0.8px !important; color: #86868B !important;
+    margin: 16px 0 8px 0 !important; padding: 0 !important;
 }
-[data-testid="stSidebar"] hr { border-color: #BFDBFE !important; margin: 12px 0 !important; }
-[data-testid="stSidebar"] label { color: #334155 !important; font-size: 12px !important; font-weight: 600 !important; }
+
+/* Dividers */
+[data-testid="stSidebar"] hr { border-color: #F0F0F5 !important; margin: 16px 0 !important; }
+
+/* Labels */
+[data-testid="stSidebar"] label {
+    color: #1D1D1F !important; font-size: 13px !important; font-weight: 500 !important;
+}
+
+/* Inputs */
 [data-testid="stSidebar"] input {
-    background: #FFFFFF !important; border: 1px solid #BFDBFE !important;
-    color: #1E293B !important; border-radius: 6px !important; font-size: 13px !important;
+    background: #FFFFFF !important; border: 1px solid #E5E5EA !important;
+    color: #1D1D1F !important; border-radius: 8px !important; font-size: 14px !important;
 }
+[data-testid="stSidebar"] input:focus { border-color: #007AFF !important; box-shadow: 0 0 0 3px rgba(0,122,255,0.12) !important; }
+
+/* Selects */
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background: #FFFFFF !important; border-color: #BFDBFE !important; color: #1E293B !important; caret-color: transparent !important;
+    background: #FFFFFF !important; border-color: #E5E5EA !important;
+    border-radius: 8px !important; color: #1D1D1F !important; caret-color: transparent !important;
 }
 [data-testid="stSidebar"] [data-baseweb="select"] input { caret-color: transparent !important; }
-[data-testid="stSidebar"] [data-baseweb="select"] * { color: #1E293B !important; }
-[data-testid="stSidebar"] [data-testid="stNumberInputStepUp"],
-[data-testid="stSidebar"] [data-testid="stNumberInputStepDown"] { color: #64748B !important; border-color: #BFDBFE !important; }
-[data-testid="stSidebar"] .stRadio label, [data-testid="stSidebar"] [role="radiogroup"] label span { color: #334155 !important; }
-[data-testid="stSidebar"] p, [data-testid="stSidebar"] span { color: #334155 !important; }
+[data-testid="stSidebar"] [data-baseweb="select"] * { color: #1D1D1F !important; }
 
-/* Sidebar containers (fee/product cards) */
-[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
-    background: #FFFFFF !important; border: 1px solid #BFDBFE !important;
-    border-radius: 8px !important; margin-bottom: 6px !important;
+/* Number input steppers */
+[data-testid="stSidebar"] [data-testid="stNumberInputStepUp"],
+[data-testid="stSidebar"] [data-testid="stNumberInputStepDown"] {
+    color: #86868B !important; border-color: #E5E5EA !important;
 }
 
-/* Sidebar buttons */
+/* Radio */
+[data-testid="stSidebar"] .stRadio label,
+[data-testid="stSidebar"] [role="radiogroup"] label span { color: #1D1D1F !important; font-size: 13px !important; }
+.stRadio > div { gap: 8px !important; }
+
+/* Text */
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] span { color: #1D1D1F !important; }
+
+/* Cards (fee/product containers) */
+[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
+    background: #FFFFFF !important; border: 1px solid #E5E5EA !important;
+    border-radius: 10px !important; margin-bottom: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+}
+
+/* Sidebar primary buttons */
 [data-testid="stSidebar"] .stButton > button {
-    background: #DBEAFE !important; color: #1E40AF !important;
-    border: 1px solid #93C5FD !important; border-radius: 6px !important;
-    font-size: 12px !important; padding: 5px 14px !important; font-weight: 600 !important;
+    background: #FFFFFF !important; color: #007AFF !important;
+    border: 1px solid #E5E5EA !important; border-radius: 8px !important;
+    font-size: 13px !important; padding: 6px 16px !important; font-weight: 500 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: #BFDBFE !important; color: #1E3A8A !important; transform: none !important;
+    background: #F5F5F7 !important; color: #0066CC !important; transform: none !important;
 }
-[data-testid="stSidebar"] .stButton > button * { color: #1E40AF !important; }
-[data-testid="stSidebar"] .stButton > button:hover * { color: #1E3A8A !important; }
+[data-testid="stSidebar"] .stButton > button * { color: #007AFF !important; }
+[data-testid="stSidebar"] .stButton > button:hover * { color: #0066CC !important; }
 
 /* Sidebar secondary (delete) buttons */
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
-    background: transparent !important; border: 1px solid #BFDBFE !important;
-    color: #94A3B8 !important; padding: 2px 8px !important; min-height: 0 !important;
+    background: transparent !important; border: 1px solid #E5E5EA !important;
+    color: #AEAEB2 !important; padding: 2px 8px !important; min-height: 0 !important;
+    border-radius: 6px !important; box-shadow: none !important;
 }
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover {
-    background: #FEE2E2 !important; border-color: #FECACA !important; color: #EF4444 !important;
+    background: #FFF0F0 !important; border-color: #FFD4D4 !important; color: #FF3B30 !important;
 }
-[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] * { color: #94A3B8 !important; }
-[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover * { color: #EF4444 !important; }
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] * { color: #AEAEB2 !important; }
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover * { color: #FF3B30 !important; }
 
 /* Sidebar slider */
-[data-testid="stSidebar"] [data-baseweb="slider"] [role="slider"] { background: #3B82F6 !important; }
+[data-testid="stSidebar"] [data-baseweb="slider"] [role="slider"] { background: #007AFF !important; }
 
-/* Sidebar spacing — comfortable, not cramped */
-[data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.75rem !important; }
+/* Sidebar spacing */
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
 
-/* ── Main buttons ── */
-.stButton > button { background: #0066CC !important; color: #FFF !important; border: none !important; font-weight: 600 !important; border-radius: 8px !important; font-size: 13px !important; padding: 6px 16px !important; transition: all .15s ease !important; }
-.stButton > button:hover { background: #0055AA !important; transform: translateY(-1px) !important; }
+/* ═══ Main Content ═══ */
+
+/* Primary buttons */
+.stButton > button {
+    background: #007AFF !important; color: #FFF !important;
+    border: none !important; font-weight: 500 !important; border-radius: 8px !important;
+    font-size: 14px !important; padding: 8px 20px !important;
+    transition: background 0.15s ease !important;
+}
+.stButton > button:hover { background: #0066CC !important; transform: none !important; }
 .stButton > button * { color: #FFF !important; }
 
-/* ── Secondary buttons (delete ✕) ── */
-[data-testid="stBaseButton-secondary"] { background: transparent !important; color: #64748B !important; border: 1px solid #E2E8F0 !important; border-radius: 6px !important; padding: 2px 10px !important; font-size: 13px !important; min-height: 0 !important; box-shadow: none !important; transform: none !important; }
-[data-testid="stBaseButton-secondary"]:hover { background: #FEE2E2 !important; border-color: #FECACA !important; color: #EF4444 !important; transform: none !important; }
-[data-testid="stBaseButton-secondary"] * { color: #64748B !important; }
-[data-testid="stBaseButton-secondary"]:hover * { color: #EF4444 !important; }
+/* Secondary buttons (delete ✕ on main area) */
+[data-testid="stBaseButton-secondary"] {
+    background: transparent !important; color: #AEAEB2 !important;
+    border: 1px solid #E5E5EA !important; border-radius: 6px !important;
+    padding: 2px 10px !important; font-size: 13px !important;
+    min-height: 0 !important; box-shadow: none !important; transform: none !important;
+}
+[data-testid="stBaseButton-secondary"]:hover {
+    background: #FFF0F0 !important; border-color: #FFD4D4 !important;
+    color: #FF3B30 !important; transform: none !important;
+}
+[data-testid="stBaseButton-secondary"] * { color: #AEAEB2 !important; }
+[data-testid="stBaseButton-secondary"]:hover * { color: #FF3B30 !important; }
 
-/* ── Tables ── */
-[data-testid="stDataFrame"] { border-radius: 10px !important; overflow: hidden !important; }
-th { background: #F1F5F9 !important; font-weight: 600 !important; font-size: 12px !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; color: #64748B !important; border-bottom: 2px solid #E2E8F0 !important; }
+/* ═══ Data Tables ═══ */
+[data-testid="stDataFrame"] { border-radius: 12px !important; overflow: hidden !important; }
+th {
+    background: #F8FAFC !important; font-weight: 500 !important; font-size: 11px !important;
+    text-transform: uppercase !important; letter-spacing: 0.5px !important;
+    color: #86868B !important; border-bottom: 1px solid #F0F0F5 !important;
+}
 
-/* ── Tabs ── */
-.stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 2px solid #E2E8F0; }
-.stTabs [data-baseweb="tab"] { font-weight: 600 !important; font-size: 13px !important; padding: 10px 20px !important; color: #94A3B8 !important; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-.stTabs [aria-selected="true"] { color: #0066CC !important; border-bottom-color: #0066CC !important; background: transparent !important; }
+/* ═══ Tabs ═══ */
+.stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 1px solid #F0F0F5; }
+.stTabs [data-baseweb="tab"] {
+    font-weight: 500 !important; font-size: 14px !important;
+    padding: 12px 24px !important; color: #86868B !important;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color 0.15s ease !important;
+}
+.stTabs [aria-selected="true"] {
+    color: #1D1D1F !important; border-bottom-color: #007AFF !important;
+    background: transparent !important; font-weight: 600 !important;
+}
 
-/* ── Misc ── */
-.scenario-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 4px; }
-.streamlit-expanderHeader { font-size: 13px !important; font-weight: 600 !important; color: #64748B !important; background: transparent !important; }
-.section-header { font-size: 18px !important; font-weight: 700 !important; color: #1E293B !important; margin-bottom: 4px !important; }
-.section-sub { font-size: 13px !important; color: #94A3B8 !important; margin-bottom: 16px !important; }
-.stat-row { display: flex; gap: 24px; margin-top: 12px; }
+/* ═══ Custom classes ═══ */
+.scenario-header {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #86868B; margin-bottom: 8px;
+}
+.streamlit-expanderHeader {
+    font-size: 13px !important; font-weight: 500 !important;
+    color: #86868B !important; background: transparent !important;
+}
+.section-header {
+    font-size: 20px !important; font-weight: 600 !important;
+    color: #1D1D1F !important; margin-bottom: 4px !important;
+    letter-spacing: -0.2px !important;
+}
+.section-sub {
+    font-size: 14px !important; color: #86868B !important; margin-bottom: 24px !important;
+}
+.stat-row { display: flex; gap: 32px; margin-top: 16px; }
 .stat-item { display: flex; flex-direction: column; }
-.stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #94A3B8; }
-.stat-val { font-size: 15px; font-weight: 700; color: #1E293B; }
-[data-testid="stAlert"] { border-radius: 8px !important; font-size: 13px !important; }
-#MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
-.stRadio > div { gap: 4px !important; }
-.stRadio label { font-size: 13px !important; }
+.stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #86868B; }
+.stat-val { font-size: 16px; font-weight: 600; color: #1D1D1F; margin-top: 2px; }
+[data-testid="stAlert"] { border-radius: 10px !important; font-size: 14px !important; }
 </style>
 """
 
@@ -519,11 +598,10 @@ st.markdown(
     '<div class="brand">'
     '<span class="brand-logo">Deal Desk</span>'
     '<span class="brand-divider"></span>'
-    '<span class="brand-sub">Deal Desk Modeler</span>'
+    '<span class="brand-sub">Pricing Modeler</span>'
     "</div>",
     unsafe_allow_html=True,
 )
-st.markdown("")
 
 
 # ── Session State ────────────────────────────────────────────────────────────
