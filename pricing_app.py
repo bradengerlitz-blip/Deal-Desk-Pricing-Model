@@ -921,6 +921,7 @@ st.markdown("")
 tab_names = ["📊 Breakdown"]
 if num_scenarios > 1:
     tab_names.append(f"⚖️ vs. {results[0]['Label']}")
+tab_names.append("🏢 EE Pricing Calculator")
 tab_names.append("💲 Pricing Table")
 tab_names.append("📥 Export")
 tabs = st.tabs(tab_names)
@@ -1031,6 +1032,388 @@ if num_scenarios > 1:
 
             if comp_idx < num_scenarios - 1:
                 st.markdown("---")
+
+# ── Tab: EE Pricing Calculator ──
+with tabs[-3]:
+    st.markdown('<p class="section-header">EE Pricing Calculator</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="section-sub">Quick-reference pricing for Employee Engagement modules</p>',
+        unsafe_allow_html=True,
+    )
+
+    # ── Session state defaults ──
+    if "ee_users" not in st.session_state:
+        st.session_state.ee_users = 7100
+    if "ee_region" not in st.session_state:
+        st.session_state.ee_region = "USA"
+    if "ee_uplift" not in st.session_state:
+        st.session_state.ee_uplift = 15.0
+    if "ee_impl_override" not in st.session_state:
+        st.session_state.ee_impl_override = 0.0
+
+    # Module selections: Essential / Advanced / None
+    if "ee_platform" not in st.session_state:
+        st.session_state.ee_platform = "Essential"
+    if "ee_donate" not in st.session_state:
+        st.session_state.ee_donate = "Essential"
+    if "ee_volunteer" not in st.session_state:
+        st.session_state.ee_volunteer = "—"
+    if "ee_eg" not in st.session_state:
+        st.session_state.ee_eg = "—"
+
+    # ── Reference data (editable in expander) ──
+    if "ee_regions" not in st.session_state:
+        st.session_state.ee_regions = {
+            "USA":    {"adj": 1.0},
+            "US Int'l": {"adj": 1.0},
+            "CAN":    {"adj": 1.0},
+            "UK":     {"adj": 0.7395},
+            "EUR (Rest)": {"adj": 0.75375},
+            "FRA":    {"adj": 0.7},
+            "GER":    {"adj": 0.804},
+            "CHF":    {"adj": 0.820845},
+            "ANZ":    {"adj": 1.100328},
+            "NBNLUX": {"adj": 0.75375},
+        }
+
+    if "ee_tiers" not in st.session_state:
+        # cumul = cumulative total at the START of this tier (i.e. total for all prior tiers)
+        st.session_state.ee_tiers = [
+            {"low": 1,       "high": 2158,     "rate": 18.528058, "cumul": 0.0},
+            {"low": 2159,    "high": 2999,     "rate": 13.18,     "cumul": 40002.077},
+            {"low": 3000,    "high": 4999,     "rate": 12.16,     "cumul": 51086.470},
+            {"low": 5000,    "high": 9999,     "rate": 5.68,      "cumul": 75406.459},
+            {"low": 10000,   "high": 24999,    "rate": 4.26,      "cumul": 103806.459},
+            {"low": 25000,   "high": 49999,    "rate": 2.83,      "cumul": 167706.459},
+            {"low": 50000,   "high": 74999,    "rate": 2.09,      "cumul": 238456.459},
+            {"low": 75000,   "high": 99999,    "rate": 2.09,      "cumul": 290706.459},
+            {"low": 100000,  "high": 149999,   "rate": 2.09,      "cumul": 342956.459},
+            {"low": 150000,  "high": 249999,   "rate": 1.33,      "cumul": 447456.459},
+            {"low": 250000,  "high": 499999,   "rate": 0.91,      "cumul": 580456.459},
+            {"low": 500000,  "high": 1500000,  "rate": 0.91,      "cumul": 807956.459},
+        ]
+
+    if "ee_module_weights" not in st.session_state:
+        st.session_state.ee_module_weights = {
+            "Platform Essential": 0.39, "Platform Advanced": 0.50,
+            "Donate Essential":   0.20, "Donate Advanced":   0.25,
+            "Volunteer Essential": 0.25, "Volunteer Advanced": 0.50,
+            "EG Essential":       0.18, "EG Advanced":       0.36,
+        }
+
+    if "ee_min_floors" not in st.session_state:
+        # Floors per module per tier band: [up to 5K, 5-10K, 10-50K]
+        st.session_state.ee_min_floors = {
+            "Platform Essential": [15600.81, 19923.72, 29408.52],
+            "Platform Advanced":  [20001.04, 25543.24, 37703.23],
+            "Donate Essential":   [8000.42,  10217.29, 15081.29],
+            "Donate Advanced":    [10000.52, 12771.62, 18851.61],
+            "Volunteer Essential": [10000.52, 12771.62, 18851.61],
+            "Volunteer Advanced":  [20001.04, 25543.24, 37703.23],
+            "EG Essential":       [7200.37,  9195.56,  13573.16],
+            "EG Advanced":        [14400.75, 18391.13, 27146.33],
+        }
+
+    if "ee_impl_costs" not in st.session_state:
+        # [up to 5K, 5-10K, 10-50K, 50K+]
+        st.session_state.ee_impl_costs = {
+            "Platform Essential": [5500,  6667,  10000, 15000],
+            "Platform Advanced":  [8250,  10000, 15000, 22500],
+            "Donate Essential":   [6875,  8333,  12500, 18750],
+            "Donate Advanced":    [11000, 13333, 20000, 30000],
+            "Volunteer Essential": [1375,  1667,  2500,  3750],
+            "Volunteer Advanced":  [2750,  3333,  5000,  7500],
+            "EG Essential":       [3300,  4000,  6000,  9000],
+            "EG Advanced":        [8250,  10000, 15000, 22500],
+        }
+
+    # ── Helper: compute base annual amount from graduated tiers ──
+    def ee_calc_base(users: int, region_adj: float) -> float:
+        """Find the tier the user falls in, use cumulative + marginal rate."""
+        if users <= 0:
+            return 0.0
+        tiers = st.session_state.ee_tiers
+        # Find the tier where low <= users (last match)
+        matched = tiers[0]
+        for t in tiers:
+            if t["low"] <= users:
+                matched = t
+            else:
+                break
+        total = matched["cumul"] + (users - matched["low"]) * matched["rate"]
+        # If users exceed last tier, extend at last tier rate
+        if users > tiers[-1]["high"]:
+            total = tiers[-1]["cumul"] + (users - tiers[-1]["low"]) * tiers[-1]["rate"]
+        return max(40000, total) * region_adj
+
+    # ── Helper: get employee band index ──
+    def ee_band_index(users: int) -> int:
+        if users < 5000:
+            return 0
+        elif users < 10000:
+            return 1
+        elif users < 50000:
+            return 2
+        else:
+            return 3
+
+    def ee_band_label(users: int) -> str:
+        labels = ["Up to 5K", "5-10K", "10-50K", "50K+"]
+        return labels[ee_band_index(users)]
+
+    # ── Inputs ──
+    in1, in2, in3 = st.columns(3)
+    with in1:
+        ee_users = st.number_input("Eligible Users", min_value=1, value=st.session_state.ee_users,
+                                    step=100, key="ee_users_input")
+        st.session_state.ee_users = ee_users
+    with in2:
+        region_names = list(st.session_state.ee_regions.keys())
+        ee_region = st.selectbox("Region", region_names,
+                                  index=region_names.index(st.session_state.ee_region),
+                                  key="ee_region_input")
+        st.session_state.ee_region = ee_region
+    with in3:
+        ee_uplift = st.number_input("Uplift % (for initial quote)", min_value=0.0,
+                                     max_value=100.0, value=st.session_state.ee_uplift,
+                                     step=1.0, format="%.1f", key="ee_uplift_input")
+        st.session_state.ee_uplift = ee_uplift
+
+    st.markdown("---")
+
+    # ── Module tier selection ──
+    st.markdown("**Select module tiers**")
+    mod_options = ["—", "Essential", "Advanced"]
+    mc1, mc2, mc3, mc4 = st.columns(4)
+    with mc1:
+        ee_platform = st.selectbox("Platform", mod_options,
+                                    index=mod_options.index(st.session_state.ee_platform),
+                                    key="ee_platform_sel")
+        st.session_state.ee_platform = ee_platform
+    with mc2:
+        donate_opts = ["—", "Essential", "Advanced"]
+        ee_donate = st.selectbox("Donate", donate_opts,
+                                  index=donate_opts.index(st.session_state.ee_donate),
+                                  key="ee_donate_sel")
+        st.session_state.ee_donate = ee_donate
+    with mc3:
+        vol_opts = ["—", "Essential"]  # Advanced = N/A per spreadsheet
+        ee_volunteer = st.selectbox("Volunteer", vol_opts,
+                                     index=vol_opts.index(st.session_state.ee_volunteer) if st.session_state.ee_volunteer in vol_opts else 0,
+                                     key="ee_volunteer_sel")
+        st.session_state.ee_volunteer = ee_volunteer
+    with mc4:
+        ee_eg = st.selectbox("Employee Groups", mod_options,
+                              index=mod_options.index(st.session_state.ee_eg),
+                              key="ee_eg_sel")
+        st.session_state.ee_eg = ee_eg
+
+    st.markdown("---")
+
+    # ── Compute pricing ──
+    region_adj = st.session_state.ee_regions[ee_region]["adj"]
+    base_amount = ee_calc_base(ee_users, region_adj)
+    band_idx = ee_band_index(ee_users)
+    uplift_mult = 1 / (1 - ee_uplift / 100) if ee_uplift < 100 else 1.0
+
+    weights = st.session_state.ee_module_weights
+    floors = st.session_state.ee_min_floors
+
+    modules_selected = {
+        "Platform": ee_platform,
+        "Donate": ee_donate,
+        "Volunteer": ee_volunteer,
+        "EG": ee_eg,
+    }
+
+    module_rows = []
+    total_annual = 0.0
+    total_impl = 0.0
+
+    for mod_name, tier_choice in modules_selected.items():
+        if tier_choice == "—":
+            continue
+        key = f"{mod_name} {tier_choice}"
+        weight = weights.get(key, 0)
+        annual_sub = weight * base_amount
+
+        # Apply minimum floor (floors only have 3 bands; 50K+ has no floor — use 10-50K)
+        floor_idx = min(band_idx, 2)
+        floor_val = floors.get(key, [0, 0, 0])[floor_idx]
+        annual_sub = max(annual_sub, floor_val)
+
+        user_rate = annual_sub / ee_users if ee_users else 0
+        impl = st.session_state.ee_impl_costs.get(key, [0, 0, 0, 0])[band_idx]
+
+        module_rows.append({
+            "Module": mod_name,
+            "Tier": tier_choice,
+            "Annual Subscription": annual_sub,
+            "User Rate": user_rate,
+            "Implementation": impl,
+        })
+        total_annual += annual_sub
+        total_impl += impl
+
+    # ── Implementation override ──
+    impl_col1, impl_col2 = st.columns(2)
+    with impl_col1:
+        impl_override = st.number_input(
+            "Implementation Override ($)",
+            min_value=0.0, value=st.session_state.ee_impl_override,
+            step=1000.0, format="%.0f", key="ee_impl_override_input",
+            help="Set to 0 to use standard implementation costs. Enter a custom value to override."
+        )
+        st.session_state.ee_impl_override = impl_override
+
+    final_impl = impl_override if impl_override > 0 else total_impl
+
+    # ── Summary metrics ──
+    total_uplifted = total_annual * uplift_mult
+    effective_rate = total_annual / ee_users if ee_users else 0
+    uplifted_rate = total_uplifted / ee_users if ee_users else 0
+    year1_total = total_annual + final_impl
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Annual Subscription", f"${total_annual:,.2f}")
+    m2.metric("Effective $/User", f"${effective_rate:,.2f}")
+    m3.metric(f"Uplift Rate ({ee_uplift:.0f}%)", f"${total_uplifted:,.2f}")
+    m4.metric("Year 1 Total", f"${year1_total:,.2f}")
+
+    # ── Module breakdown table ──
+    if module_rows:
+        st.markdown("**Module Breakdown**")
+        mod_df = pd.DataFrame(module_rows)
+        # Add totals row
+        totals_row = {
+            "Module": "Total",
+            "Tier": "",
+            "Annual Subscription": total_annual,
+            "User Rate": effective_rate,
+            "Implementation": final_impl,
+        }
+        mod_df = pd.concat([mod_df, pd.DataFrame([totals_row])], ignore_index=True)
+
+        def highlight_total_ee(row: pd.Series) -> list[str]:
+            style = "background:#F1F5F9;font-weight:600"
+            return [style] * len(row) if row["Module"] == "Total" else [""] * len(row)
+
+        st.dataframe(
+            mod_df.style.apply(highlight_total_ee, axis=1).format({
+                "Annual Subscription": "${:,.2f}",
+                "User Rate": "${:,.4f}",
+                "Implementation": "${:,.0f}",
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        # ── Uplift summary ──
+        st.markdown("**Initial Quote (with uplift)**")
+        uplift_rows = []
+        for r in module_rows:
+            uplift_rows.append({
+                "Module": r["Module"],
+                "Tier": r["Tier"],
+                "Retail (Annual)": r["Annual Subscription"],
+                f"Uplift {ee_uplift:.0f}% (Annual)": r["Annual Subscription"] * uplift_mult,
+                "User Rate (Uplift)": (r["Annual Subscription"] * uplift_mult) / ee_users if ee_users else 0,
+            })
+        uplift_totals = {
+            "Module": "Total",
+            "Tier": "",
+            "Retail (Annual)": total_annual,
+            f"Uplift {ee_uplift:.0f}% (Annual)": total_uplifted,
+            "User Rate (Uplift)": uplifted_rate,
+        }
+        uplift_rows.append(uplift_totals)
+        uplift_df = pd.DataFrame(uplift_rows)
+        st.dataframe(
+            uplift_df.style.apply(highlight_total_ee, axis=1).format({
+                "Retail (Annual)": "${:,.2f}",
+                f"Uplift {ee_uplift:.0f}% (Annual)": "${:,.2f}",
+                "User Rate (Uplift)": "${:,.4f}",
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        # ── Year 1 total summary ──
+        st.markdown("**Year 1 Summary**")
+        y1c1, y1c2, y1c3 = st.columns(3)
+        y1c1.metric("Implementation", f"${final_impl:,.0f}")
+        y1c2.metric("Annual Subscription", f"${total_annual:,.2f}")
+        y1c3.metric("Total Year 1", f"${year1_total:,.2f}")
+
+    else:
+        st.info("Select at least one module above to see pricing.")
+
+    # ── Editable reference data (expander) ──
+    with st.expander("Edit Reference Data", expanded=False):
+        edit_tab1, edit_tab2, edit_tab3, edit_tab4 = st.tabs([
+            "Graduated Tiers", "Module Weights", "Min Floors", "Implementation Costs"
+        ])
+
+        with edit_tab1:
+            st.caption("Base per-user rates by tier (USD). Cumulative = total from all prior tiers.")
+            for i, t in enumerate(st.session_state.ee_tiers):
+                tc1, tc2, tc3, tc4 = st.columns([1, 1, 1, 1])
+                with tc1:
+                    new_low = st.number_input("Low", value=t["low"], key=f"eet_low_{i}",
+                                               min_value=0, step=1)
+                with tc2:
+                    new_high = st.number_input("High", value=t["high"], key=f"eet_high_{i}",
+                                                min_value=0, step=1)
+                with tc3:
+                    new_rate = st.number_input("Rate $/user", value=t["rate"], key=f"eet_rate_{i}",
+                                                min_value=0.0, step=0.01, format="%.6f")
+                with tc4:
+                    new_cumul = st.number_input("Cumulative $", value=t["cumul"], key=f"eet_cumul_{i}",
+                                                 min_value=0.0, step=100.0, format="%.3f")
+                st.session_state.ee_tiers[i] = {"low": new_low, "high": new_high, "rate": new_rate, "cumul": new_cumul}
+
+        with edit_tab2:
+            st.caption("Each module's share of the base amount (decimal, e.g. 0.39 = 39%)")
+            for wk, wv in st.session_state.ee_module_weights.items():
+                new_w = st.number_input(wk, value=wv, min_value=0.0, max_value=1.0,
+                                         step=0.01, format="%.4f", key=f"eew_{wk}")
+                st.session_state.ee_module_weights[wk] = new_w
+
+        with edit_tab3:
+            st.caption("Minimum annual subscription floors by employee band [Up to 5K, 5-10K, 10-50K]")
+            for fk, fv in st.session_state.ee_min_floors.items():
+                st.markdown(f"**{fk}**")
+                fc1, fc2, fc3 = st.columns(3)
+                with fc1:
+                    f0 = st.number_input("Up to 5K", value=fv[0], step=100.0, format="%.2f", key=f"eef_{fk}_0")
+                with fc2:
+                    f1 = st.number_input("5-10K", value=fv[1], step=100.0, format="%.2f", key=f"eef_{fk}_1")
+                with fc3:
+                    f2 = st.number_input("10-50K", value=fv[2], step=100.0, format="%.2f", key=f"eef_{fk}_2")
+                st.session_state.ee_min_floors[fk] = [f0, f1, f2]
+
+        with edit_tab4:
+            st.caption("Implementation fees by employee band [Up to 5K, 5-10K, 10-50K, 50K+]")
+            for ik, iv in st.session_state.ee_impl_costs.items():
+                st.markdown(f"**{ik}**")
+                ic1, ic2, ic3, ic4 = st.columns(4)
+                with ic1:
+                    i0 = st.number_input("Up to 5K", value=float(iv[0]), step=100.0, format="%.0f", key=f"eei_{ik}_0")
+                with ic2:
+                    i1 = st.number_input("5-10K", value=float(iv[1]), step=100.0, format="%.0f", key=f"eei_{ik}_1")
+                with ic3:
+                    i2 = st.number_input("10-50K", value=float(iv[2]), step=100.0, format="%.0f", key=f"eei_{ik}_2")
+                with ic4:
+                    i3 = st.number_input("50K+", value=float(iv[3]), step=100.0, format="%.0f", key=f"eei_{ik}_3")
+                st.session_state.ee_impl_costs[ik] = [i0, i1, i2, i3]
+
+    # ── Editable region adjustment factors ──
+    with st.expander("Edit Region Adjustment Factors", expanded=False):
+        st.caption("Adjustment factor applied to base amount (1.0 = no adjustment)")
+        for rname, rdata in st.session_state.ee_regions.items():
+            new_adj = st.number_input(rname, value=rdata["adj"], min_value=0.0,
+                                       step=0.01, format="%.6f", key=f"eer_{rname}")
+            st.session_state.ee_regions[rname]["adj"] = new_adj
 
 # ── Tab: Pricing Table ──
 with tabs[-2]:
