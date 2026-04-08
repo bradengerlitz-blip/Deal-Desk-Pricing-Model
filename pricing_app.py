@@ -931,11 +931,8 @@ for scene_idx, col in enumerate(scenario_cols):
             mode = st.selectbox("Mode", mode_options, index=mode_index, key=f"wm_{scene_idx}")
             st.session_state[f"s_mode_{scene_idx}"] = mode
 
-        valid_added = [f for f in st.session_state[f"s_add_{scene_idx}"] if f in available_fee_names]
-        added = st.multiselect(
-            "One-Time Products", options=available_fee_names, default=valid_added, key=f"wa_{scene_idx}"
-        )
-        st.session_state[f"s_add_{scene_idx}"] = added
+        # All one-time products auto-included in Year 1
+        added = available_fee_names
 
         payment_days = PAY_TERMS[payment]
         ledger = st.session_state[f"s_ledger_{scene_idx}"]
