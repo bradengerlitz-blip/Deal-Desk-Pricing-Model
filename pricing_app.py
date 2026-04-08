@@ -458,16 +458,79 @@ def build_export_xlsx(results: list[dict]) -> bytes:
         elif col_name == "Saving (%)":
             cell.number_format = PCT_FMT
 
-    # ── Scenario tables ──
+    # ── Scenario tables (pivoted: rows=metrics, cols=years) ──
     export_scenarios = [s for s in results if s["Schedule"]]
     for scenario in export_scenarios:
-        df = results_to_export_dataframe(scenario["Label"], scenario["Schedule"])
-        write_header(list(df.columns))
-        for _, data_row in df.iterrows():
-            for c, (col_name, val) in enumerate(data_row.items(), 1):
-                cell = ws.cell(row=row, column=c, value=val)
-                apply_fmt(cell, col_name)
+        schedule = scenario["Schedule"]
+        if not schedule:
+            continue
+
+        # Title row
+        cell = ws.cell(row=row, column=1, value=scenario["Label"])
+        cell.font = Font(bold=True, size=12)
+        row += 1
+
+        year_labels = [f"Year {r.year}" for r in schedule]
+        write_header([""] + year_labels + ["Total"])
+
+        # Collect metric rows
+        metric_rows: list[tuple[str, list, object]] = []
+
+        # Users
+        metric_rows.append(("Users", [r.users for r in schedule], ""))
+
+        # Uplift
+        metric_rows.append(("Uplift", [r.uplift_pct * 100 for r in schedule], ""))
+
+        # Product rates (recurring)
+        for name in schedule[0].product_rates:
+            metric_rows.append((f"{name} (Rate)", [r.product_rates.get(name, 0) for r in schedule], ""))
+
+        # ARR
+        arr_vals = [r.arr for r in schedule]
+        metric_rows.append(("ARR", arr_vals, sum(arr_vals)))
+
+        # One-time charges
+        for key in schedule[0].one_time_charges:
+            ot_vals = [r.one_time_charges.get(key, 0) for r in schedule]
+            metric_rows.append((key, ot_vals, sum(ot_vals)))
+
+        # Total Billed
+        billed_vals = [r.total_billed for r in schedule]
+        metric_rows.append(("Total Billed", billed_vals, sum(billed_vals)))
+
+        dollar_labels = {"ARR", "Total Billed"}
+        dollar_labels.update(schedule[0].one_time_charges.keys())
+        dollar_labels.update(f"{n} (Rate)" for n in schedule[0].product_rates)
+
+        for label, vals, total_val in metric_rows:
+            is_total_row = label in ("ARR", "Total Billed")
+            cell = ws.cell(row=row, column=1, value=label)
+            if is_total_row:
+                cell.fill = TOTAL_FILL
+                cell.font = TOTAL_FONT
+            for c, v in enumerate(vals, 2):
+                cell = ws.cell(row=row, column=c, value=v)
+                if label in dollar_labels:
+                    cell.number_format = MONEY_FMT
+                elif label == "Uplift":
+                    cell.number_format = UPLIFT_FMT
+                elif label == "Users":
+                    cell.number_format = '#,##0'
+                if is_total_row:
+                    cell.fill = TOTAL_FILL
+                    cell.font = TOTAL_FONT
+            # Total column
+            total_col = len(vals) + 2
+            if total_val != "":
+                cell = ws.cell(row=row, column=total_col, value=total_val)
+                if label in dollar_labels:
+                    cell.number_format = MONEY_FMT
+                if is_total_row:
+                    cell.fill = TOTAL_FILL
+                    cell.font = TOTAL_FONT
             row += 1
+
         row += 3  # spacer
 
     # ── Billed Savings table ──
