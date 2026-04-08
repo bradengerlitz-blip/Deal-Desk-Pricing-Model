@@ -573,7 +573,7 @@ def _fees_from_state() -> list[Fee]:
 
 with st.sidebar:
     st.markdown("### Deal Setup")
-    num_scenarios = st.slider("Scenarios", 2, 4, 2)
+    num_scenarios = st.selectbox("Scenarios", options=[1, 2, 3, 4, 5], index=1)
 
     st.markdown("---")
     st.markdown("### Users")
