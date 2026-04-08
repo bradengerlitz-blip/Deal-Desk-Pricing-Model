@@ -1191,7 +1191,7 @@ with tabs[-3]:
                                   key="ee_donate_sel")
         st.session_state.ee_donate = ee_donate
     with mc3:
-        vol_opts = ["—", "Essential", "Advanced"]
+        vol_opts = ["—", "Essential"]
         ee_volunteer = st.selectbox("Volunteer", vol_opts,
                                      index=vol_opts.index(st.session_state.ee_volunteer) if st.session_state.ee_volunteer in vol_opts else 0,
                                      key="ee_volunteer_sel")
