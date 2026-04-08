@@ -1047,8 +1047,6 @@ with tabs[-3]:
         st.session_state.ee_users = 0
     if "ee_region" not in st.session_state:
         st.session_state.ee_region = "USA"
-    if "ee_uplift" not in st.session_state:
-        st.session_state.ee_uplift = 15.0
     if "ee_impl_override" not in st.session_state:
         st.session_state.ee_impl_override = 0.0
 
@@ -1163,7 +1161,7 @@ with tabs[-3]:
         return labels[ee_band_index(users)]
 
     # ── Inputs ──
-    in1, in2, in3 = st.columns(3)
+    in1, in2 = st.columns(2)
     with in1:
         ee_users = st.number_input("Eligible Users", min_value=0, value=st.session_state.ee_users,
                                     step=100, key="ee_users_input")
@@ -1174,11 +1172,6 @@ with tabs[-3]:
                                   index=region_names.index(st.session_state.ee_region),
                                   key="ee_region_input")
         st.session_state.ee_region = ee_region
-    with in3:
-        ee_uplift = st.number_input("Uplift % (for initial quote)", min_value=0.0,
-                                     max_value=100.0, value=st.session_state.ee_uplift,
-                                     step=1.0, format="%.1f", key="ee_uplift_input")
-        st.session_state.ee_uplift = ee_uplift
 
     st.markdown("---")
 
@@ -1215,7 +1208,6 @@ with tabs[-3]:
     region_adj = st.session_state.ee_regions[ee_region]["adj"]
     base_amount = ee_calc_base(ee_users, region_adj)
     band_idx = ee_band_index(ee_users)
-    uplift_mult = 1 / (1 - ee_uplift / 100) if ee_uplift < 100 else 1.0
 
     weights = st.session_state.ee_module_weights
     floors = st.session_state.ee_min_floors
@@ -1270,16 +1262,13 @@ with tabs[-3]:
     final_impl = impl_override if impl_override > 0 else total_impl
 
     # ── Summary metrics ──
-    total_uplifted = total_annual * uplift_mult
     effective_rate = total_annual / ee_users if ee_users else 0
-    uplifted_rate = total_uplifted / ee_users if ee_users else 0
     year1_total = total_annual + final_impl
 
-    m1, m2, m3, m4 = st.columns(4)
+    m1, m2, m3 = st.columns(3)
     m1.metric("Annual Subscription", f"${total_annual:,.2f}")
     m2.metric("Effective $/User", f"${effective_rate:,.2f}")
-    m3.metric(f"Uplift Rate ({ee_uplift:.0f}%)", f"${total_uplifted:,.2f}")
-    m4.metric("Year 1 Total", f"${year1_total:,.2f}")
+    m3.metric("Year 1 Total", f"${year1_total:,.2f}")
 
     # ── Module breakdown table ──
     if module_rows:
@@ -1304,36 +1293,6 @@ with tabs[-3]:
                 "Annual Subscription": "${:,.2f}",
                 "User Rate": "${:,.4f}",
                 "Implementation": "${:,.0f}",
-            }),
-            use_container_width=True,
-            hide_index=True,
-        )
-
-        # ── Uplift summary ──
-        st.markdown("**Initial Quote (with uplift)**")
-        uplift_rows = []
-        for r in module_rows:
-            uplift_rows.append({
-                "Module": r["Module"],
-                "Tier": r["Tier"],
-                "Retail (Annual)": r["Annual Subscription"],
-                f"Uplift {ee_uplift:.0f}% (Annual)": r["Annual Subscription"] * uplift_mult,
-                "User Rate (Uplift)": (r["Annual Subscription"] * uplift_mult) / ee_users if ee_users else 0,
-            })
-        uplift_totals = {
-            "Module": "Total",
-            "Tier": "",
-            "Retail (Annual)": total_annual,
-            f"Uplift {ee_uplift:.0f}% (Annual)": total_uplifted,
-            "User Rate (Uplift)": uplifted_rate,
-        }
-        uplift_rows.append(uplift_totals)
-        uplift_df = pd.DataFrame(uplift_rows)
-        st.dataframe(
-            uplift_df.style.apply(highlight_total_ee, axis=1).format({
-                "Retail (Annual)": "${:,.2f}",
-                f"Uplift {ee_uplift:.0f}% (Annual)": "${:,.2f}",
-                "User Rate (Uplift)": "${:,.4f}",
             }),
             use_container_width=True,
             hide_index=True,
