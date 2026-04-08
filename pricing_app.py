@@ -431,8 +431,9 @@ html, body, h1, h2, h3, h4, h5, p, label,
     color: #1E293B !important; border-radius: 6px !important; font-size: 13px !important;
 }
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background: #FFFFFF !important; border-color: #BFDBFE !important; color: #1E293B !important;
+    background: #FFFFFF !important; border-color: #BFDBFE !important; color: #1E293B !important; caret-color: transparent !important;
 }
+[data-testid="stSidebar"] [data-baseweb="select"] input { caret-color: transparent !important; }
 [data-testid="stSidebar"] [data-baseweb="select"] * { color: #1E293B !important; }
 [data-testid="stSidebar"] [data-testid="stNumberInputStepUp"],
 [data-testid="stSidebar"] [data-testid="stNumberInputStepDown"] { color: #64748B !important; border-color: #BFDBFE !important; }
