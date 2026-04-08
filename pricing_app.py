@@ -416,12 +416,21 @@ svg title, svg desc, svg text,
 
 /* ── Page background ── */
 .stApp, .block-container, header, [data-testid="stHeader"] { background: #FFFFFF !important; }
-.block-container { padding-top: 2rem !important; max-width: 1400px !important; }
+.block-container { padding-top: 1rem !important; max-width: 1400px !important; }
+
+/* ── Kill focus rings / cursor ovals on all selects ── */
+[data-baseweb="select"] input { caret-color: transparent !important; }
+[data-baseweb="select"] > div:focus-within {
+    box-shadow: none !important; outline: none !important;
+}
+input:focus, select:focus, [data-baseweb="select"] *:focus {
+    outline: none !important;
+}
 #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
 
 /* ── Brand ── */
-.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.brand-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: #1D1D1F !important; }
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; overflow: visible !important; }
+.brand-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: #1D1D1F !important; white-space: nowrap !important; }
 .brand-divider { width: 1px; height: 20px; background: #D2D2D7; }
 .brand-sub { font-size: 14px !important; font-weight: 400 !important; color: #86868B !important; }
 
