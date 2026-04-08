@@ -82,92 +82,6 @@ GS_TOLERANCE = 1.0
 GS_LOWER_BOUND = -0.50
 GS_UPPER_BOUND = 2.0
 
-# ── Spark Pricing Tiers ─────────────────────────────────────────────────────
-
-SPARK_IMPL_TIERS: list[tuple[int, int, float]] = [
-    (1,      1750,    15750.0),
-    (1751,   2500,    17000.0),
-    (2501,   4000,    20987.5),
-    (4001,   5000,    22425.0),
-    (5001,   6000,    23862.5),
-    (6001,   7000,    25300.0),
-    (7001,   8000,    26737.5),
-    (8001,   9000,    28175.0),
-    (9001,   10000,   29612.5),
-    (10001,  12500,   33206.25),
-    (12501,  15000,   36800.0),
-    (15001,  17500,   40393.75),
-    (17501,  20000,   43987.5),
-    (20001,  25000,   51175.0),
-    (25001,  30000,   58362.5),
-    (30001,  35000,   65550.0),
-    (35001,  40000,   72737.5),
-    (40001,  50000,   78832.5),
-    (50001,  100000,  99618.75),
-    (100001, 200000,  131962.5),
-    (200001, 300000,  189462.5),
-    (300001, 500000,  304462.5),
-    (500001, 1000000, 476100.0),
-]
-
-SPARK_SUB_TIERS: list[tuple[int, int, float]] = [
-    (1,      1889,   18.53),   # flat base: $35,000 for first 1,889 users
-    (1890,   2999,   11.77),
-    (3000,   4999,   10.86),
-    (5000,   9999,    5.07),
-    (10000,  24999,   3.80),
-    (25000,  49999,   2.53),
-    (50000,  74999,   1.87),
-    (75000,  99999,   1.87),
-    (100000, 149999,  1.87),
-    (150000, 249999,  1.19),
-    (250000, 1000000, 0.81),
-]
-
-
-def spark_implementation_fee(users: int) -> float:
-    """Look up the flat implementation fee for a given user count."""
-    if users <= 0:
-        return 0.0
-    for low, high, fee in SPARK_IMPL_TIERS:
-        if low <= users <= high:
-            return fee
-    return SPARK_IMPL_TIERS[-1][2]
-
-
-def spark_subscription_fee(users: int) -> list[dict]:
-    """
-    Calculate cumulative tiered subscription pricing.
-    Returns breakdown rows and total.
-    """
-    if users <= 0:
-        return []
-    rows: list[dict] = []
-    remaining = users
-    cumulative_cost = 0.0
-    for low, high, rate in SPARK_SUB_TIERS:
-        if remaining <= 0:
-            break
-        tier_size = high - low + 1
-        if low == 1:
-            # First tier is a flat base ($35,000)
-            users_in_tier = min(remaining, tier_size)
-            tier_cost = 35_000.0
-        else:
-            users_in_tier = min(remaining, tier_size)
-            tier_cost = users_in_tier * rate
-        cumulative_cost += tier_cost
-        rows.append({
-            "Tier": f"{low:,}–{high:,}",
-            "Users in Tier": users_in_tier,
-            "Rate ($/user)": rate,
-            "Tier Cost ($)": tier_cost,
-            "Cumulative ($)": cumulative_cost,
-        })
-        remaining -= users_in_tier
-    return rows
-
-
 DEFAULT_PRODUCTS = [
     Product("Spark", PricingType.PER_USER, 0.0),
     Product("Grants", PricingType.FLAT_FEE, 0.0),
@@ -842,7 +756,7 @@ st.markdown("")
 tab_names = ["📊 Breakdown"]
 if num_scenarios > 1:
     tab_names.append(f"⚖️ vs. {results[0]['Label']}")
-tab_names.append("💲 Spark Pricing")
+tab_names.append("💲 Pricing Table")
 tab_names.append("📥 Export")
 tabs = st.tabs(tab_names)
 
@@ -953,61 +867,178 @@ if num_scenarios > 1:
             if comp_idx < num_scenarios - 1:
                 st.markdown("---")
 
-# ── Tab: Spark Pricing ──
+# ── Tab: Pricing Table ──
 with tabs[-2]:
-    st.markdown('<p class="section-header">Spark Pricing Calculator</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-header">Pricing Table</p>', unsafe_allow_html=True)
     st.markdown(
-        '<p class="section-sub">Enter eligible employees to calculate implementation and subscription fees</p>',
+        '<p class="section-sub">Build tiered pricing grids — adjust tier boundaries, base price, and discount %s</p>',
         unsafe_allow_html=True,
     )
 
-    spark_users = st.number_input(
-        "Eligible Employees", value=0, step=100, min_value=0, key="spark_calc_users"
+    # ── Defaults ──
+    PT_DEFAULT_TIERS = [
+        {"high": 1200,  "pct": 100.0},
+        {"high": 5000,  "pct": 97.0},
+        {"high": 10000, "pct": 95.0},
+        {"high": 15000, "pct": 93.0},
+        {"high": 20000, "pct": 91.0},
+    ]
+
+    if "pt_base_price" not in st.session_state:
+        st.session_state.pt_base_price = 68207.0
+    if "pt_tiers" not in st.session_state:
+        st.session_state.pt_tiers = [dict(t) for t in PT_DEFAULT_TIERS]
+
+    # ── Controls ──
+    ctrl_col1, ctrl_col2 = st.columns([1, 2])
+    with ctrl_col1:
+        base_price = st.number_input(
+            "Tier 1 Fixed Price ($)",
+            value=st.session_state.pt_base_price,
+            step=1000.0,
+            min_value=0.0,
+            key="pt_base_input",
+            format="%.2f",
+        )
+        st.session_state.pt_base_price = base_price
+
+    # ── Tier editor ──
+    st.markdown("---")
+    st.markdown("**Configure Tiers**")
+    st.caption("Set the employee ceiling for each tier and the % of the prior tier's rate. Tier 1 is always fixed price.")
+
+    tiers = st.session_state.pt_tiers
+    delete_tier_idx: int | None = None
+
+    for i, tier in enumerate(tiers):
+        cols = st.columns([2, 2, 2, 1])
+        low = 1 if i == 0 else tiers[i - 1]["high"] + 1
+        with cols[0]:
+            st.text_input(
+                "Employees Low", value=f"{low:,}", key=f"pt_low_{i}", disabled=True,
+                label_visibility="collapsed" if i > 0 else "visible",
+            )
+        with cols[1]:
+            tier["high"] = st.number_input(
+                "Employees High" if i == 0 else f"High {i}",
+                value=tier["high"],
+                step=500,
+                min_value=low,
+                key=f"pt_high_{i}",
+                label_visibility="collapsed" if i > 0 else "visible",
+            )
+        with cols[2]:
+            if i == 0:
+                st.text_input(
+                    "% of Prior Rate", value="Fixed", key=f"pt_pct_d_{i}", disabled=True,
+                    label_visibility="visible",
+                )
+            else:
+                tier["pct"] = st.number_input(
+                    f"% of Prior {i}",
+                    value=tier["pct"],
+                    step=1.0,
+                    min_value=1.0,
+                    max_value=100.0,
+                    key=f"pt_pct_{i}",
+                    format="%.1f",
+                    label_visibility="collapsed",
+                )
+        with cols[3]:
+            if i > 0:
+                st.markdown('<div class="del-btn">', unsafe_allow_html=True)
+                if st.button("✕", key=f"pt_del_{i}", use_container_width=True):
+                    delete_tier_idx = i
+                st.markdown("</div>", unsafe_allow_html=True)
+
+    if delete_tier_idx is not None:
+        tiers.pop(delete_tier_idx)
+        st.rerun()
+
+    if st.button("＋ Add Tier", key="pt_add_tier"):
+        last_high = tiers[-1]["high"] if tiers else 0
+        tiers.append({"high": last_high + 5000, "pct": 89.0})
+        st.rerun()
+
+    # ── Compute pricing grid ──
+    grid_rows: list[dict] = []
+    prev_rate = 0.0
+
+    for i, tier in enumerate(tiers):
+        low = 1 if i == 0 else tiers[i - 1]["high"] + 1
+        high = tier["high"]
+        users_in_tier = high - low + 1
+
+        if i == 0:
+            rate_per_user = base_price / users_in_tier if users_in_tier > 0 else 0
+            tier_total = base_price
+        else:
+            rate_per_user = prev_rate * (tier["pct"] / 100.0)
+            tier_total = users_in_tier * rate_per_user
+
+        overall_total = (grid_rows[-1]["Overall Total"] + tier_total) if grid_rows else tier_total
+        eff_rate = overall_total / high if high > 0 else 0
+
+        grid_rows.append({
+            "Employees Low": low,
+            "Employees High": high,
+            "Price / User": rate_per_user,
+            "Tier Total": tier_total,
+            "Overall Total": overall_total,
+            "Effective Rate": eff_rate,
+            "% of Prior": "Fixed" if i == 0 else f"{tier['pct']:.0f}%",
+        })
+        prev_rate = rate_per_user
+
+    # ── Table 1: Build Your Own Grid ──
+    st.markdown("---")
+    st.markdown("**Build Your Own Grid**")
+
+    grid_df = pd.DataFrame(grid_rows)
+    display_cols = ["Employees Low", "Employees High", "Price / User", "Tier Total", "Overall Total", "Effective Rate", "% of Prior"]
+    st.dataframe(
+        grid_df[display_cols].style.format({
+            "Employees Low": "{:,.0f}",
+            "Employees High": "{:,.0f}",
+            "Price / User": "${:,.2f}",
+            "Tier Total": "${:,.2f}",
+            "Overall Total": "${:,.2f}",
+            "Effective Rate": "${:,.2f}",
+        }),
+        use_container_width=True,
+        hide_index=True,
     )
 
-    if spark_users > 0:
-        # Implementation
-        impl_fee = spark_implementation_fee(spark_users)
-        st.markdown("**Implementation Fee**")
-        impl_tier_label = "N/A"
-        for low, high, fee in SPARK_IMPL_TIERS:
-            if low <= spark_users <= high:
-                impl_tier_label = f"{low:,}–{high:,} users"
-                break
-        st.metric("Spark Implementation", f"${impl_fee:,.0f}", delta=impl_tier_label, delta_color="off")
+    # ── Table 2: Additional Users ──
+    st.markdown("---")
+    st.markdown("**Additional Users**")
+    st.caption("Shows what a client pays when they grow into a new tier")
 
-        st.markdown("---")
+    add_rows: list[dict] = []
+    for i, tier in enumerate(tiers):
+        low = 1 if i == 0 else tiers[i - 1]["high"] + 1
+        high = tier["high"]
+        label = f"Up to {high:,}" if i == 0 else f"{low:,} – {high:,}"
+        overall = grid_rows[i]["Overall Total"]
+        eff = grid_rows[i]["Effective Rate"]
+        add_users = "Fixed" if i == 0 else f"${grid_rows[i]['Price / User']:,.2f}"
 
-        # Subscription
-        st.markdown("**Annual Subscription**")
-        sub_rows = spark_subscription_fee(spark_users)
-        if sub_rows:
-            total_sub = sub_rows[-1]["Cumulative ($)"]
-            eff_rate = total_sub / spark_users if spark_users else 0
-            m1, m2 = st.columns(2)
-            with m1:
-                st.metric("Annual Subscription", f"${total_sub:,.0f}")
-            with m2:
-                st.metric("Effective Rate", f"${eff_rate:,.2f}/user")
+        add_rows.append({
+            "Eligible Users": label,
+            "Additional User Rate": add_users,
+            "Total": overall,
+            "Effective Rate": eff,
+        })
 
-            sub_df = pd.DataFrame(sub_rows)
-            st.dataframe(
-                sub_df.style.format({
-                    "Users in Tier": "{:,}",
-                    "Rate ($/user)": "${:,.2f}",
-                    "Tier Cost ($)": "${:,.0f}",
-                    "Cumulative ($)": "${:,.0f}",
-                }),
-                use_container_width=True,
-                hide_index=True,
-            )
-
-        st.markdown("---")
-        st.markdown("**Year 1 Total**")
-        yr1_total = impl_fee + (sub_rows[-1]["Cumulative ($)"] if sub_rows else 0)
-        st.metric("Implementation + Subscription", f"${yr1_total:,.0f}")
-    else:
-        st.info("Enter an employee count above to see pricing.")
+    add_df = pd.DataFrame(add_rows)
+    st.dataframe(
+        add_df.style.format({
+            "Total": "${:,.2f}",
+            "Effective Rate": "${:,.2f}",
+        }),
+        use_container_width=True,
+        hide_index=True,
+    )
 
 # ── Tab: Export ──
 with tabs[-1]:
