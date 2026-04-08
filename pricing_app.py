@@ -830,22 +830,17 @@ with st.sidebar:
                 prod["cadence"] = cat_entry.get("cadence", "One-Time")
 
         with st.container(border=True):
-            # Header row: bold name + cadence badge + delete button
+            # Header: bold name + cadence badge
             cadence = prod.get("cadence", "One-Time")
             cad_color = "#007AFF" if cadence == "Recurring" else "#86868B"
-            hdr_col, del_col = st.columns([6, 1])
-            with hdr_col:
-                st.markdown(
-                    f'<span style="font-size:13px;color:#1D1D1F;font-weight:700;">{prod["name"]}</span>'
-                    f' <span style="font-size:10px;color:{cad_color};font-weight:600;'
-                    f'text-transform:uppercase;letter-spacing:0.5px;">{cadence}</span>',
-                    unsafe_allow_html=True,
-                )
-            with del_col:
-                if st.button("✕", key=f"pd_{idx}", type="secondary"):
-                    delete_prod_idx = idx
+            st.markdown(
+                f'<span style="font-size:13px;color:#1D1D1F;font-weight:700;">{prod["name"]}</span>'
+                f' <span style="font-size:10px;color:{cad_color};font-weight:600;'
+                f'text-transform:uppercase;letter-spacing:0.5px;">{cadence}</span>',
+                unsafe_allow_html=True,
+            )
 
-            type_col, price_col = st.columns(2)
+            type_col, price_col, del_col = st.columns([3, 3, 1])
             with type_col:
                 type_options = [t.value for t in PricingType]
                 prod["type"] = st.selectbox(
@@ -855,6 +850,10 @@ with st.sidebar:
                 prod["price"] = st.number_input(
                     "Price ($)", value=prod["price"], key=f"pp_{idx}", format="%.2f", min_value=0.0
                 )
+            with del_col:
+                st.markdown("<div style='height:27px'></div>", unsafe_allow_html=True)
+                if st.button("✕", key=f"pd_{idx}", type="secondary"):
+                    delete_prod_idx = idx
 
             # Variance from list price
             lp = prod["list_price"]
