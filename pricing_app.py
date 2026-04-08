@@ -1043,7 +1043,7 @@ with tabs[-3]:
 
     # ── Session state defaults ──
     if "ee_users" not in st.session_state:
-        st.session_state.ee_users = 7100
+        st.session_state.ee_users = 0
     if "ee_region" not in st.session_state:
         st.session_state.ee_region = "USA"
     if "ee_uplift" not in st.session_state:
@@ -1164,7 +1164,7 @@ with tabs[-3]:
     # ── Inputs ──
     in1, in2, in3 = st.columns(3)
     with in1:
-        ee_users = st.number_input("Eligible Users", min_value=1, value=st.session_state.ee_users,
+        ee_users = st.number_input("Eligible Users", min_value=0, value=st.session_state.ee_users,
                                     step=100, key="ee_users_input")
         st.session_state.ee_users = ee_users
     with in2:
