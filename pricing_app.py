@@ -414,9 +414,11 @@ html, body, h1, h2, h3, h4, h5, p, label,
 .stButton > button { background: #0066CC !important; color: #FFF !important; border: none !important; font-weight: 600 !important; border-radius: 8px !important; font-size: 13px !important; padding: 6px 16px !important; transition: all .15s ease !important; }
 .stButton > button:hover { background: #0055AA !important; transform: translateY(-1px) !important; }
 .stButton > button * { color: #FFF !important; }
-.del-btn button { background: #FFF !important; color: #94A3B8 !important; border: 1px solid #E2E8F0 !important; border-radius: 6px !important; padding: 2px 8px !important; font-size: 12px !important; }
-.del-btn button:hover { background: #FEE2E2 !important; border-color: #FECACA !important; }
+.del-btn { margin-top: 4px; }
+.del-btn button { background: transparent !important; color: #94A3B8 !important; border: none !important; border-radius: 6px !important; padding: 4px 8px !important; font-size: 16px !important; min-height: 0 !important; line-height: 1 !important; }
+.del-btn button:hover { background: #FEE2E2 !important; color: #EF4444 !important; }
 .del-btn button * { color: #94A3B8 !important; }
+.del-btn button:hover * { color: #EF4444 !important; }
 [data-testid="stDataFrame"] { border-radius: 10px !important; overflow: hidden !important; }
 th { background: #F1F5F9 !important; font-weight: 600 !important; font-size: 12px !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; color: #64748B !important; border-bottom: 2px solid #E2E8F0 !important; }
 .stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 2px solid #E2E8F0; }
@@ -918,7 +920,7 @@ with tabs[-2]:
     recalc_from: int | None = None
 
     for i, tier in enumerate(tiers):
-        cols = st.columns([2, 2, 2, 1])
+        cols = st.columns([3, 3, 3, 0.5])
         with cols[0]:
             new_low = st.number_input(
                 "Employees Low" if i == 0 else f"Low {i}",
@@ -966,7 +968,7 @@ with tabs[-2]:
         with cols[3]:
             if i > 0:
                 st.markdown('<div class="del-btn">', unsafe_allow_html=True)
-                if st.button("✕", key=f"pt_del_{i}", use_container_width=True):
+                if st.button("✕", key=f"pt_del_{i}"):
                     delete_tier_idx = i
                 st.markdown("</div>", unsafe_allow_html=True)
 
