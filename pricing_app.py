@@ -875,23 +875,19 @@ with tabs[-2]:
         unsafe_allow_html=True,
     )
 
-    # ── Defaults ──
-    PT_DEFAULT_TIERS = [
-        {"high": 1200,  "pct": 100.0},
-        {"high": 5000,  "pct": 97.0},
-        {"high": 10000, "pct": 95.0},
-        {"high": 15000, "pct": 93.0},
-        {"high": 20000, "pct": 91.0},
-    ]
-
+    # ── Defaults (all zeros) ──
     if "pt_base_price" not in st.session_state:
-        st.session_state.pt_base_price = 68207.0
+        st.session_state.pt_base_price = 0.0
+    if "pt_increment" not in st.session_state:
+        st.session_state.pt_increment = 5000
     if "pt_tiers" not in st.session_state:
-        st.session_state.pt_tiers = [dict(t) for t in PT_DEFAULT_TIERS]
+        st.session_state.pt_tiers = [
+            {"low": 0, "high": 0, "pct": 100.0},
+        ]
 
-    # ── Controls ──
-    ctrl_col1, ctrl_col2 = st.columns([1, 2])
-    with ctrl_col1:
+    # ── Controls row ──
+    ctrl1, ctrl2 = st.columns(2)
+    with ctrl1:
         base_price = st.number_input(
             "Tier 1 Fixed Price ($)",
             value=st.session_state.pt_base_price,
@@ -901,32 +897,55 @@ with tabs[-2]:
             format="%.2f",
         )
         st.session_state.pt_base_price = base_price
+    with ctrl2:
+        increment = st.number_input(
+            "Tier Increment (users)",
+            value=st.session_state.pt_increment,
+            step=500,
+            min_value=1,
+            key="pt_inc_input",
+            help="When you add a tier, the High boundary auto-increases by this amount",
+        )
+        st.session_state.pt_increment = increment
 
     # ── Tier editor ──
     st.markdown("---")
-    st.markdown("**Configure Tiers**")
-    st.caption("Set the employee ceiling for each tier and the % of the prior tier's rate. Tier 1 is always fixed price.")
+    st.markdown("**Build Your Own Grid**")
+    st.caption("Set employee ranges and the % of the prior tier's rate. Tier 1 is always fixed price.")
 
     tiers = st.session_state.pt_tiers
     delete_tier_idx: int | None = None
+    recalc_from: int | None = None
 
     for i, tier in enumerate(tiers):
         cols = st.columns([2, 2, 2, 1])
-        low = 1 if i == 0 else tiers[i - 1]["high"] + 1
         with cols[0]:
-            st.text_input(
-                "Employees Low", value=f"{low:,}", key=f"pt_low_{i}", disabled=True,
+            new_low = st.number_input(
+                "Employees Low" if i == 0 else f"Low {i}",
+                value=tier["low"],
+                step=1,
+                min_value=0,
+                key=f"pt_low_{i}",
                 label_visibility="collapsed" if i > 0 else "visible",
             )
+            if new_low != tier["low"]:
+                tier["low"] = new_low
+                # If tier 1 low changed, keep high >= low
+                if tier["high"] < new_low:
+                    tier["high"] = new_low
+                recalc_from = i + 1
         with cols[1]:
-            tier["high"] = st.number_input(
+            new_high = st.number_input(
                 "Employees High" if i == 0 else f"High {i}",
                 value=tier["high"],
-                step=500,
-                min_value=low,
+                step=1,
+                min_value=tier["low"],
                 key=f"pt_high_{i}",
                 label_visibility="collapsed" if i > 0 else "visible",
             )
+            if new_high != tier["high"]:
+                tier["high"] = new_high
+                recalc_from = i + 1
         with cols[2]:
             if i == 0:
                 st.text_input(
@@ -951,13 +970,24 @@ with tabs[-2]:
                     delete_tier_idx = i
                 st.markdown("</div>", unsafe_allow_html=True)
 
+    # Cascade boundary changes downward
+    if recalc_from is not None:
+        for j in range(recalc_from, len(tiers)):
+            prev_high = tiers[j - 1]["high"]
+            tiers[j]["low"] = prev_high + 1
+            tiers[j]["high"] = tiers[j]["low"] + increment - 1
+
     if delete_tier_idx is not None:
         tiers.pop(delete_tier_idx)
+        # Re-cascade lows after deletion
+        for j in range(1, len(tiers)):
+            tiers[j]["low"] = tiers[j - 1]["high"] + 1
         st.rerun()
 
     if st.button("＋ Add Tier", key="pt_add_tier"):
         last_high = tiers[-1]["high"] if tiers else 0
-        tiers.append({"high": last_high + 5000, "pct": 89.0})
+        new_low = last_high + 1
+        tiers.append({"low": new_low, "high": new_low + increment - 1, "pct": 97.0})
         st.rerun()
 
     # ── Compute pricing grid ──
@@ -965,9 +995,9 @@ with tabs[-2]:
     prev_rate = 0.0
 
     for i, tier in enumerate(tiers):
-        low = 1 if i == 0 else tiers[i - 1]["high"] + 1
+        low = tier["low"]
         high = tier["high"]
-        users_in_tier = high - low + 1
+        users_in_tier = max(high - low + 1, 0)
 
         if i == 0:
             rate_per_user = base_price / users_in_tier if users_in_tier > 0 else 0
@@ -990,55 +1020,56 @@ with tabs[-2]:
         })
         prev_rate = rate_per_user
 
-    # ── Table 1: Build Your Own Grid ──
+    # ── Output Table 1: Grid ──
     st.markdown("---")
-    st.markdown("**Build Your Own Grid**")
 
-    grid_df = pd.DataFrame(grid_rows)
-    display_cols = ["Employees Low", "Employees High", "Price / User", "Tier Total", "Overall Total", "Effective Rate", "% of Prior"]
-    st.dataframe(
-        grid_df[display_cols].style.format({
-            "Employees Low": "{:,.0f}",
-            "Employees High": "{:,.0f}",
-            "Price / User": "${:,.2f}",
-            "Tier Total": "${:,.2f}",
-            "Overall Total": "${:,.2f}",
-            "Effective Rate": "${:,.2f}",
-        }),
-        use_container_width=True,
-        hide_index=True,
-    )
+    if grid_rows:
+        grid_df = pd.DataFrame(grid_rows)
+        display_cols = ["Employees Low", "Employees High", "Price / User", "Tier Total", "Overall Total", "Effective Rate", "% of Prior"]
+        st.dataframe(
+            grid_df[display_cols].style.format({
+                "Employees Low": "{:,.0f}",
+                "Employees High": "{:,.0f}",
+                "Price / User": "${:,.2f}",
+                "Tier Total": "${:,.2f}",
+                "Overall Total": "${:,.2f}",
+                "Effective Rate": "${:,.2f}",
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
 
-    # ── Table 2: Additional Users ──
+    # ── Output Table 2: Additional Users ──
     st.markdown("---")
     st.markdown("**Additional Users**")
     st.caption("Shows what a client pays when they grow into a new tier")
 
-    add_rows: list[dict] = []
-    for i, tier in enumerate(tiers):
-        low = 1 if i == 0 else tiers[i - 1]["high"] + 1
-        high = tier["high"]
-        label = f"Up to {high:,}" if i == 0 else f"{low:,} – {high:,}"
-        overall = grid_rows[i]["Overall Total"]
-        eff = grid_rows[i]["Effective Rate"]
-        add_users = "Fixed" if i == 0 else f"${grid_rows[i]['Price / User']:,.2f}"
+    if grid_rows:
+        add_rows: list[dict] = []
+        for i, tier in enumerate(tiers):
+            low = tier["low"]
+            high = tier["high"]
+            label = f"Up to {high:,}" if i == 0 else f"{low:,} – {high:,}"
+            overall = grid_rows[i]["Overall Total"]
+            eff = grid_rows[i]["Effective Rate"]
+            add_users = "Fixed" if i == 0 else f"${grid_rows[i]['Price / User']:,.2f}"
 
-        add_rows.append({
-            "Eligible Users": label,
-            "Additional User Rate": add_users,
-            "Total": overall,
-            "Effective Rate": eff,
-        })
+            add_rows.append({
+                "Eligible Users": label,
+                "Additional User Rate": add_users,
+                "Total": overall,
+                "Effective Rate": eff,
+            })
 
-    add_df = pd.DataFrame(add_rows)
-    st.dataframe(
-        add_df.style.format({
-            "Total": "${:,.2f}",
-            "Effective Rate": "${:,.2f}",
-        }),
-        use_container_width=True,
-        hide_index=True,
-    )
+        add_df = pd.DataFrame(add_rows)
+        st.dataframe(
+            add_df.style.format({
+                "Total": "${:,.2f}",
+                "Effective Rate": "${:,.2f}",
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
 
 # ── Tab: Export ──
 with tabs[-1]:
