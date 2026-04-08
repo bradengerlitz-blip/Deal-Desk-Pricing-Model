@@ -331,20 +331,66 @@ def goal_seek_uplift(
 
 
 def results_to_dataframe(results: list[YearResult]) -> pd.DataFrame:
-    """Flatten YearResult list into a display-ready DataFrame."""
-    rows = []
+    """Pivot YearResults: rows = metrics/products, columns = Year 1..N + Total."""
+    if not results:
+        return pd.DataFrame()
+
+    year_cols = [f"Year {r.year}" for r in results]
+    rows: list[dict[str, object]] = []
+
+    # Users row
+    user_row: dict[str, object] = {"": "Users"}
     for r in results:
-        row: dict[str, object] = {
-            "Year": f"Year {r.year}",
-            "Uplift": f"{r.uplift_pct * 100:.2f}%",
-            "Users": r.users,
-        }
-        for name, rate in r.product_rates.items():
-            row[f"{name} Rate"] = rate
-        row["ARR"] = r.arr
-        for key, val in r.one_time_charges.items():
-            row[key] = val
-        rows.append(row)
+        user_row[f"Year {r.year}"] = r.users
+    user_row["Total"] = ""
+    rows.append(user_row)
+
+    # Uplift row
+    uplift_row: dict[str, object] = {"": "Uplift"}
+    for r in results:
+        uplift_row[f"Year {r.year}"] = f"{r.uplift_pct * 100:.2f}%"
+    uplift_row["Total"] = ""
+    rows.append(uplift_row)
+
+    # Product rate rows (recurring)
+    if results[0].product_rates:
+        for name in results[0].product_rates:
+            rate_row: dict[str, object] = {"": f"{name} (Rate)"}
+            for r in results:
+                rate_row[f"Year {r.year}"] = r.product_rates.get(name, 0)
+            rate_row["Total"] = ""
+            rows.append(rate_row)
+
+    # ARR row
+    arr_row: dict[str, object] = {"": "ARR"}
+    arr_total = 0.0
+    for r in results:
+        arr_row[f"Year {r.year}"] = r.arr
+        arr_total += r.arr
+    arr_row["Total"] = arr_total
+    rows.append(arr_row)
+
+    # One-time charge rows
+    if results[0].one_time_charges:
+        for key in results[0].one_time_charges:
+            ot_row: dict[str, object] = {"": key}
+            ot_total = 0.0
+            for r in results:
+                val = r.one_time_charges.get(key, 0)
+                ot_row[f"Year {r.year}"] = val
+                ot_total += val
+            ot_row["Total"] = ot_total
+            rows.append(ot_row)
+
+    # Total Billed row
+    billed_row: dict[str, object] = {"": "Total Billed"}
+    billed_total = 0.0
+    for r in results:
+        billed_row[f"Year {r.year}"] = r.total_billed
+        billed_total += r.total_billed
+    billed_row["Total"] = billed_total
+    rows.append(billed_row)
+
     return pd.DataFrame(rows)
 
 
@@ -1043,11 +1089,44 @@ with tabs[0]:
     for idx in range(num_scenarios):
         st.markdown(f"**{results[idx]['Label']}**")
         df = results_to_dataframe(results[idx]["Schedule"])
-        fmt = {"Users": "{:,}"}
-        for col_name in df.columns:
-            if any(k in col_name for k in ("Rate", "Fee", "ARR", "One-Time")):
-                fmt[col_name] = "${:,.2f}"
-        st.dataframe(df.style.format(fmt), use_container_width=True, hide_index=True)
+
+        # Build format dict: currency for dollar rows, comma for user rows
+        dollar_labels = {"ARR", "Total Billed"}
+        # Add one-time charge keys and rate keys
+        for r in results[idx]["Schedule"]:
+            dollar_labels.update(r.one_time_charges.keys())
+            dollar_labels.update(f"{n} (Rate)" for n in r.product_rates)
+
+        def fmt_cell(val, row_label):
+            if isinstance(val, str) or val == "" or val is None:
+                return val
+            if row_label == "Users":
+                return f"{int(val):,}"
+            if row_label in dollar_labels:
+                return f"${val:,.2f}"
+            return val
+
+        styled_data = []
+        for _, row in df.iterrows():
+            label = row[""]
+            styled_row = {"": label}
+            for col in df.columns[1:]:
+                styled_row[col] = fmt_cell(row[col], label)
+            styled_data.append(styled_row)
+
+        display_df = pd.DataFrame(styled_data)
+
+        def highlight_totals(row: pd.Series) -> list[str]:
+            bold = "font-weight:600;background:#F1F5F9"
+            if row[""] in ("ARR", "Total Billed"):
+                return [bold] * len(row)
+            return [""] * len(row)
+
+        st.dataframe(
+            display_df.style.apply(highlight_totals, axis=1),
+            use_container_width=True,
+            hide_index=True,
+        )
         if idx < num_scenarios - 1:
             st.divider()
 
