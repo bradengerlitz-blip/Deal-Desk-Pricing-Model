@@ -416,68 +416,63 @@ html, body, h1, h2, h3, h4, h5, p, label,
 [data-testid="stMetricValue"], [data-testid="stMetricValue"] div { font-size: 26px !important; font-weight: 700 !important; color: #0066CC !important; }
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] div { font-size: 11px !important; font-weight: 600 !important; color: #64748B !important; text-transform: uppercase !important; letter-spacing: 0.8px !important; }
 
-/* ── Sidebar — dark theme ── */
-[data-testid="stSidebar"] { background: #1E293B !important; border-right: 1px solid #334155 !important; }
-[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top: 1rem !important; }
-[data-testid="stSidebar"] * { color: #CBD5E1 !important; }
+/* ── Sidebar — pale blue theme ── */
+[data-testid="stSidebar"] { background: #EFF6FF !important; border-right: 1px solid #DBEAFE !important; }
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top: 1.2rem !important; }
 [data-testid="stSidebar"] .stMarkdown h3 {
     font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase !important;
-    letter-spacing: 1.2px !important; color: #64748B !important; margin: 0 0 4px 0 !important;
+    letter-spacing: 1.2px !important; color: #3B82F6 !important; margin: 4px 0 6px 0 !important;
     padding: 0 !important;
 }
-[data-testid="stSidebar"] hr { border-color: #334155 !important; margin: 8px 0 !important; }
-[data-testid="stSidebar"] label { color: #94A3B8 !important; font-size: 12px !important; font-weight: 500 !important; }
-[data-testid="stSidebar"] .stSlider label { margin-bottom: 0 !important; }
-[data-testid="stSidebar"] .stNumberInput label { margin-bottom: 0 !important; }
+[data-testid="stSidebar"] hr { border-color: #BFDBFE !important; margin: 12px 0 !important; }
+[data-testid="stSidebar"] label { color: #334155 !important; font-size: 12px !important; font-weight: 600 !important; }
 [data-testid="stSidebar"] input {
-    background: #0F172A !important; border: 1px solid #334155 !important;
-    color: #E2E8F0 !important; border-radius: 6px !important; font-size: 13px !important;
+    background: #FFFFFF !important; border: 1px solid #BFDBFE !important;
+    color: #1E293B !important; border-radius: 6px !important; font-size: 13px !important;
 }
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background: #0F172A !important; border-color: #334155 !important; color: #E2E8F0 !important;
+    background: #FFFFFF !important; border-color: #BFDBFE !important; color: #1E293B !important;
 }
-[data-testid="stSidebar"] [data-baseweb="select"] * { color: #E2E8F0 !important; }
+[data-testid="stSidebar"] [data-baseweb="select"] * { color: #1E293B !important; }
 [data-testid="stSidebar"] [data-testid="stNumberInputStepUp"],
-[data-testid="stSidebar"] [data-testid="stNumberInputStepDown"] { color: #64748B !important; }
-[data-testid="stSidebar"] .stRadio label { color: #CBD5E1 !important; }
-[data-testid="stSidebar"] [role="radiogroup"] label span { color: #CBD5E1 !important; }
+[data-testid="stSidebar"] [data-testid="stNumberInputStepDown"] { color: #64748B !important; border-color: #BFDBFE !important; }
+[data-testid="stSidebar"] .stRadio label, [data-testid="stSidebar"] [role="radiogroup"] label span { color: #334155 !important; }
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] span { color: #334155 !important; }
 
 /* Sidebar containers (fee/product cards) */
 [data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
-    background: #0F172A !important; border: 1px solid #334155 !important;
-    border-radius: 8px !important; padding: 0 !important; margin-bottom: 4px !important;
+    background: #FFFFFF !important; border: 1px solid #BFDBFE !important;
+    border-radius: 8px !important; margin-bottom: 6px !important;
 }
 
 /* Sidebar buttons */
 [data-testid="stSidebar"] .stButton > button {
-    background: #334155 !important; color: #CBD5E1 !important;
-    border: 1px solid #475569 !important; border-radius: 6px !important;
-    font-size: 12px !important; padding: 4px 12px !important; font-weight: 600 !important;
+    background: #DBEAFE !important; color: #1E40AF !important;
+    border: 1px solid #93C5FD !important; border-radius: 6px !important;
+    font-size: 12px !important; padding: 5px 14px !important; font-weight: 600 !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: #475569 !important; color: #FFF !important; transform: none !important;
+    background: #BFDBFE !important; color: #1E3A8A !important; transform: none !important;
 }
-[data-testid="stSidebar"] .stButton > button * { color: #CBD5E1 !important; }
-[data-testid="stSidebar"] .stButton > button:hover * { color: #FFF !important; }
+[data-testid="stSidebar"] .stButton > button * { color: #1E40AF !important; }
+[data-testid="stSidebar"] .stButton > button:hover * { color: #1E3A8A !important; }
 
 /* Sidebar secondary (delete) buttons */
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
-    background: transparent !important; border: 1px solid #475569 !important;
-    color: #64748B !important; padding: 2px 8px !important; min-height: 0 !important;
+    background: transparent !important; border: 1px solid #BFDBFE !important;
+    color: #94A3B8 !important; padding: 2px 8px !important; min-height: 0 !important;
 }
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover {
-    background: #7F1D1D !important; border-color: #991B1B !important; color: #FCA5A5 !important;
+    background: #FEE2E2 !important; border-color: #FECACA !important; color: #EF4444 !important;
 }
-[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] * { color: #64748B !important; }
-[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover * { color: #FCA5A5 !important; }
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] * { color: #94A3B8 !important; }
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover * { color: #EF4444 !important; }
 
-/* Sidebar slider track */
-[data-testid="stSidebar"] [data-baseweb="slider"] [role="slider"] { background: #0066CC !important; }
-[data-testid="stSidebar"] [data-baseweb="slider"] div[data-testid*="Track"] { background: #334155 !important; }
+/* Sidebar slider */
+[data-testid="stSidebar"] [data-baseweb="slider"] [role="slider"] { background: #3B82F6 !important; }
 
-/* Sidebar vertical spacing reduction */
-[data-testid="stSidebar"] .stMarkdown { margin-bottom: 0 !important; }
-[data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.4rem !important; }
+/* Sidebar spacing — comfortable, not cramped */
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.75rem !important; }
 
 /* ── Main buttons ── */
 .stButton > button { background: #0066CC !important; color: #FFF !important; border: none !important; font-weight: 600 !important; border-radius: 8px !important; font-size: 13px !important; padding: 6px 16px !important; transition: all .15s ease !important; }
