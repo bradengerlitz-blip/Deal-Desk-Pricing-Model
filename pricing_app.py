@@ -386,6 +386,8 @@ def build_export_xlsx(results: list[dict]) -> bytes:
 CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Base ── */
 .stApp, .block-container, header, [data-testid="stHeader"] { background: #FAFBFC !important; }
 html, body, h1, h2, h3, h4, h5, p, label,
 .stMarkdown, th, td, li, [class*="StyledText"] {
@@ -393,6 +395,8 @@ html, body, h1, h2, h3, h4, h5, p, label,
     color: #1E293B !important;
 }
 .block-container { padding-top: 2rem !important; max-width: 1400px !important; }
+
+/* ── Brand ── */
 .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
 .brand-logo {
     font-size: 32px; font-weight: 800; letter-spacing: -0.5px;
@@ -401,6 +405,8 @@ html, body, h1, h2, h3, h4, h5, p, label,
 }
 .brand-divider { width: 2px; height: 28px; background: #CBD5E1; border-radius: 1px; }
 .brand-sub { font-size: 15px !important; font-weight: 500 !important; color: #64748B !important; letter-spacing: 0.2px; }
+
+/* ── Metrics ── */
 [data-testid="stMetric"] {
     background: linear-gradient(135deg, #F0F7FF 0%, #FFFFFF 100%) !important;
     border: 1px solid #DBEAFE !important; border-left: 4px solid #0066CC !important;
@@ -409,20 +415,91 @@ html, body, h1, h2, h3, h4, h5, p, label,
 }
 [data-testid="stMetricValue"], [data-testid="stMetricValue"] div { font-size: 26px !important; font-weight: 700 !important; color: #0066CC !important; }
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] div { font-size: 11px !important; font-weight: 600 !important; color: #64748B !important; text-transform: uppercase !important; letter-spacing: 0.8px !important; }
-[data-testid="stSidebar"] { background: #FFFFFF !important; border-right: 1px solid #E2E8F0 !important; }
-[data-testid="stSidebar"] .stMarkdown h3 { font-size: 13px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.8px !important; color: #64748B !important; margin-top: 8px !important; }
+
+/* ── Sidebar — dark theme ── */
+[data-testid="stSidebar"] { background: #1E293B !important; border-right: 1px solid #334155 !important; }
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top: 1rem !important; }
+[data-testid="stSidebar"] * { color: #CBD5E1 !important; }
+[data-testid="stSidebar"] .stMarkdown h3 {
+    font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase !important;
+    letter-spacing: 1.2px !important; color: #64748B !important; margin: 0 0 4px 0 !important;
+    padding: 0 !important;
+}
+[data-testid="stSidebar"] hr { border-color: #334155 !important; margin: 8px 0 !important; }
+[data-testid="stSidebar"] label { color: #94A3B8 !important; font-size: 12px !important; font-weight: 500 !important; }
+[data-testid="stSidebar"] .stSlider label { margin-bottom: 0 !important; }
+[data-testid="stSidebar"] .stNumberInput label { margin-bottom: 0 !important; }
+[data-testid="stSidebar"] input {
+    background: #0F172A !important; border: 1px solid #334155 !important;
+    color: #E2E8F0 !important; border-radius: 6px !important; font-size: 13px !important;
+}
+[data-testid="stSidebar"] [data-baseweb="select"] > div {
+    background: #0F172A !important; border-color: #334155 !important; color: #E2E8F0 !important;
+}
+[data-testid="stSidebar"] [data-baseweb="select"] * { color: #E2E8F0 !important; }
+[data-testid="stSidebar"] [data-testid="stNumberInputStepUp"],
+[data-testid="stSidebar"] [data-testid="stNumberInputStepDown"] { color: #64748B !important; }
+[data-testid="stSidebar"] .stRadio label { color: #CBD5E1 !important; }
+[data-testid="stSidebar"] [role="radiogroup"] label span { color: #CBD5E1 !important; }
+
+/* Sidebar containers (fee/product cards) */
+[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
+    background: #0F172A !important; border: 1px solid #334155 !important;
+    border-radius: 8px !important; padding: 0 !important; margin-bottom: 4px !important;
+}
+
+/* Sidebar buttons */
+[data-testid="stSidebar"] .stButton > button {
+    background: #334155 !important; color: #CBD5E1 !important;
+    border: 1px solid #475569 !important; border-radius: 6px !important;
+    font-size: 12px !important; padding: 4px 12px !important; font-weight: 600 !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: #475569 !important; color: #FFF !important; transform: none !important;
+}
+[data-testid="stSidebar"] .stButton > button * { color: #CBD5E1 !important; }
+[data-testid="stSidebar"] .stButton > button:hover * { color: #FFF !important; }
+
+/* Sidebar secondary (delete) buttons */
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
+    background: transparent !important; border: 1px solid #475569 !important;
+    color: #64748B !important; padding: 2px 8px !important; min-height: 0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover {
+    background: #7F1D1D !important; border-color: #991B1B !important; color: #FCA5A5 !important;
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] * { color: #64748B !important; }
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover * { color: #FCA5A5 !important; }
+
+/* Sidebar slider track */
+[data-testid="stSidebar"] [data-baseweb="slider"] [role="slider"] { background: #0066CC !important; }
+[data-testid="stSidebar"] [data-baseweb="slider"] div[data-testid*="Track"] { background: #334155 !important; }
+
+/* Sidebar vertical spacing reduction */
+[data-testid="stSidebar"] .stMarkdown { margin-bottom: 0 !important; }
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.4rem !important; }
+
+/* ── Main buttons ── */
 .stButton > button { background: #0066CC !important; color: #FFF !important; border: none !important; font-weight: 600 !important; border-radius: 8px !important; font-size: 13px !important; padding: 6px 16px !important; transition: all .15s ease !important; }
 .stButton > button:hover { background: #0055AA !important; transform: translateY(-1px) !important; }
 .stButton > button * { color: #FFF !important; }
+
+/* ── Secondary buttons (delete ✕) ── */
 [data-testid="stBaseButton-secondary"] { background: transparent !important; color: #64748B !important; border: 1px solid #E2E8F0 !important; border-radius: 6px !important; padding: 2px 10px !important; font-size: 13px !important; min-height: 0 !important; box-shadow: none !important; transform: none !important; }
 [data-testid="stBaseButton-secondary"]:hover { background: #FEE2E2 !important; border-color: #FECACA !important; color: #EF4444 !important; transform: none !important; }
 [data-testid="stBaseButton-secondary"] * { color: #64748B !important; }
 [data-testid="stBaseButton-secondary"]:hover * { color: #EF4444 !important; }
+
+/* ── Tables ── */
 [data-testid="stDataFrame"] { border-radius: 10px !important; overflow: hidden !important; }
 th { background: #F1F5F9 !important; font-weight: 600 !important; font-size: 12px !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; color: #64748B !important; border-bottom: 2px solid #E2E8F0 !important; }
+
+/* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 2px solid #E2E8F0; }
 .stTabs [data-baseweb="tab"] { font-weight: 600 !important; font-size: 13px !important; padding: 10px 20px !important; color: #94A3B8 !important; border-bottom: 2px solid transparent; margin-bottom: -2px; }
 .stTabs [aria-selected="true"] { color: #0066CC !important; border-bottom-color: #0066CC !important; background: transparent !important; }
+
+/* ── Misc ── */
 .scenario-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 4px; }
 .streamlit-expanderHeader { font-size: 13px !important; font-weight: 600 !important; color: #64748B !important; background: transparent !important; }
 .section-header { font-size: 18px !important; font-weight: 700 !important; color: #1E293B !important; margin-bottom: 4px !important; }
@@ -537,13 +614,13 @@ with st.sidebar:
     delete_fee_idx: int | None = None
     for idx, fee in enumerate(st.session_state.one_time_fees):
         with st.container(border=True):
-            name_col, del_col = st.columns([5, 1])
+            name_col, del_col = st.columns([6, 1])
             with name_col:
                 fee["name"] = st.text_input(
                     "Fee Name", value=fee["name"], key=f"fn_{idx}", label_visibility="collapsed"
                 )
             with del_col:
-                if st.button("✕", key=f"fd_{idx}", use_container_width=True):
+                if st.button("✕", key=f"fd_{idx}", type="secondary"):
                     delete_fee_idx = idx
             fee["price"] = st.number_input(
                 "Price ($)", value=fee["price"], key=f"fp_{idx}", format="%.0f", min_value=0.0
@@ -570,13 +647,13 @@ with st.sidebar:
     delete_prod_idx: int | None = None
     for idx, prod in enumerate(st.session_state.portfolio):
         with st.container(border=True):
-            name_col, del_col = st.columns([5, 1])
+            name_col, del_col = st.columns([6, 1])
             with name_col:
                 prod["name"] = st.text_input(
                     "Product Name", value=prod["name"], key=f"pn_{idx}", label_visibility="collapsed"
                 )
             with del_col:
-                if st.button("✕", key=f"pd_{idx}", use_container_width=True):
+                if st.button("✕", key=f"pd_{idx}", type="secondary"):
                     delete_prod_idx = idx
             type_col, price_col = st.columns(2)
             with type_col:
