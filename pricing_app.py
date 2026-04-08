@@ -82,6 +82,92 @@ GS_TOLERANCE = 1.0
 GS_LOWER_BOUND = -0.50
 GS_UPPER_BOUND = 2.0
 
+# ── Spark Pricing Tiers ─────────────────────────────────────────────────────
+
+SPARK_IMPL_TIERS: list[tuple[int, int, float]] = [
+    (1,      1750,    15750.0),
+    (1751,   2500,    17000.0),
+    (2501,   4000,    20987.5),
+    (4001,   5000,    22425.0),
+    (5001,   6000,    23862.5),
+    (6001,   7000,    25300.0),
+    (7001,   8000,    26737.5),
+    (8001,   9000,    28175.0),
+    (9001,   10000,   29612.5),
+    (10001,  12500,   33206.25),
+    (12501,  15000,   36800.0),
+    (15001,  17500,   40393.75),
+    (17501,  20000,   43987.5),
+    (20001,  25000,   51175.0),
+    (25001,  30000,   58362.5),
+    (30001,  35000,   65550.0),
+    (35001,  40000,   72737.5),
+    (40001,  50000,   78832.5),
+    (50001,  100000,  99618.75),
+    (100001, 200000,  131962.5),
+    (200001, 300000,  189462.5),
+    (300001, 500000,  304462.5),
+    (500001, 1000000, 476100.0),
+]
+
+SPARK_SUB_TIERS: list[tuple[int, int, float]] = [
+    (1,      1889,   18.53),   # flat base: $35,000 for first 1,889 users
+    (1890,   2999,   11.77),
+    (3000,   4999,   10.86),
+    (5000,   9999,    5.07),
+    (10000,  24999,   3.80),
+    (25000,  49999,   2.53),
+    (50000,  74999,   1.87),
+    (75000,  99999,   1.87),
+    (100000, 149999,  1.87),
+    (150000, 249999,  1.19),
+    (250000, 1000000, 0.81),
+]
+
+
+def spark_implementation_fee(users: int) -> float:
+    """Look up the flat implementation fee for a given user count."""
+    if users <= 0:
+        return 0.0
+    for low, high, fee in SPARK_IMPL_TIERS:
+        if low <= users <= high:
+            return fee
+    return SPARK_IMPL_TIERS[-1][2]
+
+
+def spark_subscription_fee(users: int) -> list[dict]:
+    """
+    Calculate cumulative tiered subscription pricing.
+    Returns breakdown rows and total.
+    """
+    if users <= 0:
+        return []
+    rows: list[dict] = []
+    remaining = users
+    cumulative_cost = 0.0
+    for low, high, rate in SPARK_SUB_TIERS:
+        if remaining <= 0:
+            break
+        tier_size = high - low + 1
+        if low == 1:
+            # First tier is a flat base ($35,000)
+            users_in_tier = min(remaining, tier_size)
+            tier_cost = 35_000.0
+        else:
+            users_in_tier = min(remaining, tier_size)
+            tier_cost = users_in_tier * rate
+        cumulative_cost += tier_cost
+        rows.append({
+            "Tier": f"{low:,}–{high:,}",
+            "Users in Tier": users_in_tier,
+            "Rate ($/user)": rate,
+            "Tier Cost ($)": tier_cost,
+            "Cumulative ($)": cumulative_cost,
+        })
+        remaining -= users_in_tier
+    return rows
+
+
 DEFAULT_PRODUCTS = [
     Product("Spark", PricingType.PER_USER, 0.0),
     Product("Grants", PricingType.FLAT_FEE, 0.0),
@@ -756,6 +842,7 @@ st.markdown("")
 tab_names = ["📊 Breakdown"]
 if num_scenarios > 1:
     tab_names.append(f"⚖️ vs. {results[0]['Label']}")
+tab_names.append("💲 Spark Pricing")
 tab_names.append("📥 Export")
 tabs = st.tabs(tab_names)
 
@@ -865,6 +952,62 @@ if num_scenarios > 1:
 
             if comp_idx < num_scenarios - 1:
                 st.markdown("---")
+
+# ── Tab: Spark Pricing ──
+with tabs[-2]:
+    st.markdown('<p class="section-header">Spark Pricing Calculator</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="section-sub">Enter eligible employees to calculate implementation and subscription fees</p>',
+        unsafe_allow_html=True,
+    )
+
+    spark_users = st.number_input(
+        "Eligible Employees", value=0, step=100, min_value=0, key="spark_calc_users"
+    )
+
+    if spark_users > 0:
+        # Implementation
+        impl_fee = spark_implementation_fee(spark_users)
+        st.markdown("**Implementation Fee**")
+        impl_tier_label = "N/A"
+        for low, high, fee in SPARK_IMPL_TIERS:
+            if low <= spark_users <= high:
+                impl_tier_label = f"{low:,}–{high:,} users"
+                break
+        st.metric("Spark Implementation", f"${impl_fee:,.0f}", delta=impl_tier_label, delta_color="off")
+
+        st.markdown("---")
+
+        # Subscription
+        st.markdown("**Annual Subscription**")
+        sub_rows = spark_subscription_fee(spark_users)
+        if sub_rows:
+            total_sub = sub_rows[-1]["Cumulative ($)"]
+            eff_rate = total_sub / spark_users if spark_users else 0
+            m1, m2 = st.columns(2)
+            with m1:
+                st.metric("Annual Subscription", f"${total_sub:,.0f}")
+            with m2:
+                st.metric("Effective Rate", f"${eff_rate:,.2f}/user")
+
+            sub_df = pd.DataFrame(sub_rows)
+            st.dataframe(
+                sub_df.style.format({
+                    "Users in Tier": "{:,}",
+                    "Rate ($/user)": "${:,.2f}",
+                    "Tier Cost ($)": "${:,.0f}",
+                    "Cumulative ($)": "${:,.0f}",
+                }),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+        st.markdown("---")
+        st.markdown("**Year 1 Total**")
+        yr1_total = impl_fee + (sub_rows[-1]["Cumulative ($)"] if sub_rows else 0)
+        st.metric("Implementation + Subscription", f"${yr1_total:,.0f}")
+    else:
+        st.info("Enter an employee count above to see pricing.")
 
 # ── Tab: Export ──
 with tabs[-1]:
