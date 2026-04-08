@@ -385,32 +385,43 @@ def build_export_xlsx(results: list[dict]) -> bytes:
 
 CSS = """
 <style>
-/* ═══════════════════════════════════════════════════════════════════
-   Deal Desk Modeler — Design System
-   Inspired by Apple HIG + Slack: system fonts, generous whitespace,
-   near-invisible borders, color only for interactive elements.
-   Typography scale: 11 / 13 / 15 / 20  (4 levels only)
-   Spacing grid: multiples of 8px
-   Color: 60% white · 30% #F8FAFC · 10% #007AFF accent
-   ═══════════════════════════════════════════════════════════════════ */
+/* ═══ Deal Desk — Apple/Slack-inspired design ═══
+   Font: system stack (SF Pro on Mac, Segoe on Windows)
+   Scale: 11px labels · 13px body · 15px subhead · 20px title
+   Palette: #1D1D1F text · #86868B secondary · #007AFF accent
+   Spacing: 8px grid
+*/
 
-/* ── Reset & Typography ── */
-html, body, h1, h2, h3, h4, h5, p, label, span,
-.stMarkdown, th, td, li, [class*="StyledText"], input, select, textarea {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+/* ── Typography ── */
+.stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
+.stMarkdown h4, .stMarkdown h5, .stMarkdown li, label,
+th, td, input, select, textarea,
+.stButton > button, [data-testid="stBaseButton-secondary"] {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
                  'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
     -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
 }
 
-/* ── Page ── */
+/* ── Kill SVG icon text leaks (arrow_right etc.) ── */
+svg title, svg desc, svg text,
+[data-testid="stExpander"] svg *,
+[data-testid="stExpanderToggleIcon"] * {
+    font-size: 0 !important; color: transparent !important;
+    overflow: hidden !important; line-height: 0 !important;
+}
+[data-testid="stExpanderToggleIcon"] {
+    overflow: hidden !important; width: 20px !important; height: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+/* ── Page background ── */
 .stApp, .block-container, header, [data-testid="stHeader"] { background: #FFFFFF !important; }
 .block-container { padding-top: 2rem !important; max-width: 1400px !important; }
 #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
 
 /* ── Brand ── */
 .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.brand-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: #1D1D1F; }
+.brand-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: #1D1D1F !important; }
 .brand-divider { width: 1px; height: 20px; background: #D2D2D7; }
 .brand-sub { font-size: 14px !important; font-weight: 400 !important; color: #86868B !important; }
 
@@ -421,19 +432,11 @@ html, body, h1, h2, h3, h4, h5, p, label, span,
     padding: 16px 20px !important; border-radius: 12px !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
 }
-[data-testid="stMetricValue"], [data-testid="stMetricValue"] div {
-    font-size: 24px !important; font-weight: 600 !important; color: #1D1D1F !important;
-    letter-spacing: -0.3px !important;
-}
-[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] div {
-    font-size: 11px !important; font-weight: 600 !important; color: #86868B !important;
-    text-transform: uppercase !important; letter-spacing: 0.6px !important;
-}
+[data-testid="stMetricValue"] div { font-size: 24px !important; font-weight: 600 !important; color: #1D1D1F !important; }
+[data-testid="stMetricLabel"] div { font-size: 11px !important; font-weight: 600 !important; color: #86868B !important; text-transform: uppercase !important; letter-spacing: 0.6px !important; }
 
-/* ═══ Sidebar ═══ */
-[data-testid="stSidebar"] {
-    background: #F8FAFC !important; border-right: 1px solid #F0F0F5 !important;
-}
+/* ═══ SIDEBAR ═══ */
+[data-testid="stSidebar"] { background: #F5F5F7 !important; border-right: 1px solid #E5E5EA !important; }
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding: 24px 16px !important; }
 
 /* Section headers */
@@ -443,71 +446,71 @@ html, body, h1, h2, h3, h4, h5, p, label, span,
     margin: 16px 0 8px 0 !important; padding: 0 !important;
 }
 
-/* Dividers */
-[data-testid="stSidebar"] hr { border-color: #F0F0F5 !important; margin: 16px 0 !important; }
+/* Dividers — very subtle */
+[data-testid="stSidebar"] hr { border-color: #E5E5EA !important; margin: 16px 0 !important; opacity: 0.5; }
 
 /* Labels */
 [data-testid="stSidebar"] label {
     color: #1D1D1F !important; font-size: 13px !important; font-weight: 500 !important;
+    overflow: hidden !important; text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+[data-testid="stSidebar"] .stMarkdown p {
+    font-size: 13px !important; color: #1D1D1F !important;
+    overflow-wrap: break-word !important; word-wrap: break-word !important;
 }
 
-/* Inputs */
+/* Text inputs */
 [data-testid="stSidebar"] input {
-    background: #FFFFFF !important; border: 1px solid #E5E5EA !important;
+    background: #FFFFFF !important; border: 1px solid #D2D2D7 !important;
     color: #1D1D1F !important; border-radius: 8px !important; font-size: 14px !important;
 }
-[data-testid="stSidebar"] input:focus { border-color: #007AFF !important; box-shadow: 0 0 0 3px rgba(0,122,255,0.12) !important; }
+[data-testid="stSidebar"] input:focus {
+    border-color: #007AFF !important;
+    box-shadow: 0 0 0 3px rgba(0,122,255,0.1) !important;
+}
 
-/* Selects */
+/* Selects / dropdowns */
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background: #FFFFFF !important; border-color: #E5E5EA !important;
-    border-radius: 8px !important; color: #1D1D1F !important; caret-color: transparent !important;
+    background: #FFFFFF !important; border-color: #D2D2D7 !important;
+    border-radius: 8px !important; caret-color: transparent !important;
 }
 [data-testid="stSidebar"] [data-baseweb="select"] input { caret-color: transparent !important; }
-[data-testid="stSidebar"] [data-baseweb="select"] * { color: #1D1D1F !important; }
 
-/* Number input steppers */
+/* Number steppers */
 [data-testid="stSidebar"] [data-testid="stNumberInputStepUp"],
 [data-testid="stSidebar"] [data-testid="stNumberInputStepDown"] {
-    color: #86868B !important; border-color: #E5E5EA !important;
+    color: #86868B !important; border-color: #D2D2D7 !important;
 }
 
-/* Radio */
-[data-testid="stSidebar"] .stRadio label,
-[data-testid="stSidebar"] [role="radiogroup"] label span { color: #1D1D1F !important; font-size: 13px !important; }
+/* Radio buttons */
 .stRadio > div { gap: 8px !important; }
 
-/* Text */
-[data-testid="stSidebar"] p, [data-testid="stSidebar"] span { color: #1D1D1F !important; }
-
-/* Cards (fee/product containers) */
+/* Fee/product cards */
 [data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
     background: #FFFFFF !important; border: 1px solid #E5E5EA !important;
     border-radius: 10px !important; margin-bottom: 8px !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
 }
 
-/* Sidebar primary buttons */
+/* Sidebar primary buttons (Add Fee, Add Product, Clear) */
 [data-testid="stSidebar"] .stButton > button {
     background: #FFFFFF !important; color: #007AFF !important;
-    border: 1px solid #E5E5EA !important; border-radius: 8px !important;
+    border: 1px solid #D2D2D7 !important; border-radius: 8px !important;
     font-size: 13px !important; padding: 6px 16px !important; font-weight: 500 !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: #F5F5F7 !important; color: #0066CC !important; transform: none !important;
+    background: #F5F5F7 !important; transform: none !important;
 }
 [data-testid="stSidebar"] .stButton > button * { color: #007AFF !important; }
-[data-testid="stSidebar"] .stButton > button:hover * { color: #0066CC !important; }
 
-/* Sidebar secondary (delete) buttons */
+/* Sidebar delete (✕) buttons */
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
-    background: transparent !important; border: 1px solid #E5E5EA !important;
+    background: transparent !important; border: 1px solid #D2D2D7 !important;
     color: #AEAEB2 !important; padding: 2px 8px !important; min-height: 0 !important;
-    border-radius: 6px !important; box-shadow: none !important;
+    border-radius: 6px !important;
 }
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover {
-    background: #FFF0F0 !important; border-color: #FFD4D4 !important; color: #FF3B30 !important;
+    background: #FFF0F0 !important; border-color: #FFD4D4 !important;
 }
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] * { color: #AEAEB2 !important; }
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover * { color: #FF3B30 !important; }
@@ -518,70 +521,76 @@ html, body, h1, h2, h3, h4, h5, p, label, span,
 /* Sidebar spacing */
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
 
-/* ═══ Main Content ═══ */
+/* ═══ MAIN AREA ═══ */
 
 /* Primary buttons */
 .stButton > button {
     background: #007AFF !important; color: #FFF !important;
     border: none !important; font-weight: 500 !important; border-radius: 8px !important;
     font-size: 14px !important; padding: 8px 20px !important;
-    transition: background 0.15s ease !important;
 }
 .stButton > button:hover { background: #0066CC !important; transform: none !important; }
 .stButton > button * { color: #FFF !important; }
 
-/* Secondary buttons (delete ✕ on main area) */
+/* Secondary buttons (✕ in main area) */
 [data-testid="stBaseButton-secondary"] {
     background: transparent !important; color: #AEAEB2 !important;
     border: 1px solid #E5E5EA !important; border-radius: 6px !important;
     padding: 2px 10px !important; font-size: 13px !important;
-    min-height: 0 !important; box-shadow: none !important; transform: none !important;
+    min-height: 0 !important; box-shadow: none !important;
 }
 [data-testid="stBaseButton-secondary"]:hover {
     background: #FFF0F0 !important; border-color: #FFD4D4 !important;
-    color: #FF3B30 !important; transform: none !important;
 }
 [data-testid="stBaseButton-secondary"] * { color: #AEAEB2 !important; }
 [data-testid="stBaseButton-secondary"]:hover * { color: #FF3B30 !important; }
 
-/* ═══ Data Tables ═══ */
-[data-testid="stDataFrame"] { border-radius: 12px !important; overflow: hidden !important; }
-th {
-    background: #F8FAFC !important; font-weight: 500 !important; font-size: 11px !important;
-    text-transform: uppercase !important; letter-spacing: 0.5px !important;
-    color: #86868B !important; border-bottom: 1px solid #F0F0F5 !important;
+/* Main area text inputs & selects */
+[data-baseweb="select"] > div { border-radius: 8px !important; }
+[data-baseweb="input"] { border-radius: 8px !important; }
+
+/* Expander */
+[data-testid="stExpander"] {
+    border: 1px solid #E5E5EA !important; border-radius: 10px !important;
+    overflow: hidden !important;
+}
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] [data-testid="stExpanderDetails"] > div > div > p {
+    font-size: 13px !important; font-weight: 500 !important;
+    color: #86868B !important; overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+[data-testid="stExpander"] summary {
+    background: transparent !important;
+}
+[data-testid="stExpander"] svg {
+    overflow: hidden !important; width: 16px !important; height: 16px !important;
 }
 
-/* ═══ Tabs ═══ */
-.stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 1px solid #F0F0F5; }
+/* ═══ DATA TABLES ═══ */
+[data-testid="stDataFrame"] { border-radius: 10px !important; overflow: hidden !important; }
+th {
+    background: #F5F5F7 !important; font-weight: 500 !important; font-size: 11px !important;
+    text-transform: uppercase !important; letter-spacing: 0.5px !important;
+    color: #86868B !important; border-bottom: 1px solid #E5E5EA !important;
+}
+
+/* ═══ TABS ═══ */
+.stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 1px solid #E5E5EA; }
 .stTabs [data-baseweb="tab"] {
     font-weight: 500 !important; font-size: 14px !important;
     padding: 12px 24px !important; color: #86868B !important;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: color 0.15s ease !important;
 }
 .stTabs [aria-selected="true"] {
     color: #1D1D1F !important; border-bottom-color: #007AFF !important;
-    background: transparent !important; font-weight: 600 !important;
+    font-weight: 600 !important; background: transparent !important;
 }
 
-/* ═══ Custom classes ═══ */
-.scenario-header {
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.8px; color: #86868B; margin-bottom: 8px;
-}
-.streamlit-expanderHeader {
-    font-size: 13px !important; font-weight: 500 !important;
-    color: #86868B !important; background: transparent !important;
-}
-.section-header {
-    font-size: 20px !important; font-weight: 600 !important;
-    color: #1D1D1F !important; margin-bottom: 4px !important;
-    letter-spacing: -0.2px !important;
-}
-.section-sub {
-    font-size: 14px !important; color: #86868B !important; margin-bottom: 24px !important;
-}
+/* ═══ CUSTOM CLASSES ═══ */
+.scenario-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #86868B; margin-bottom: 8px; }
+.section-header { font-size: 20px !important; font-weight: 600 !important; color: #1D1D1F !important; margin-bottom: 4px !important; letter-spacing: -0.2px !important; }
+.section-sub { font-size: 14px !important; color: #86868B !important; margin-bottom: 24px !important; }
 .stat-row { display: flex; gap: 32px; margin-top: 16px; }
 .stat-item { display: flex; flex-direction: column; }
 .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #86868B; }
