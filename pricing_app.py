@@ -414,10 +414,10 @@ html, body, h1, h2, h3, h4, h5, p, label,
 .stButton > button { background: #0066CC !important; color: #FFF !important; border: none !important; font-weight: 600 !important; border-radius: 8px !important; font-size: 13px !important; padding: 6px 16px !important; transition: all .15s ease !important; }
 .stButton > button:hover { background: #0055AA !important; transform: translateY(-1px) !important; }
 .stButton > button * { color: #FFF !important; }
-.del-btn .stButton > button { background: transparent !important; color: #64748B !important; border: none !important; border-radius: 6px !important; padding: 2px 6px !important; font-size: 15px !important; min-height: 0 !important; line-height: 1 !important; box-shadow: none !important; transform: none !important; margin-top: 6px; }
-.del-btn .stButton > button:hover { background: #FEE2E2 !important; color: #EF4444 !important; }
-.del-btn .stButton > button * { color: #64748B !important; }
-.del-btn .stButton > button:hover * { color: #EF4444 !important; }
+div[data-testid="stColumn"]:has(> div > div > div > .del-btn) .stButton > button { background: #F1F5F9 !important; color: #64748B !important; border: 1px solid #E2E8F0 !important; border-radius: 6px !important; padding: 2px 8px !important; font-size: 13px !important; min-height: 0 !important; box-shadow: none !important; transform: none !important; }
+div[data-testid="stColumn"]:has(.del-btn) .stButton > button:hover { background: #FEE2E2 !important; border-color: #FECACA !important; color: #EF4444 !important; transform: none !important; }
+div[data-testid="stColumn"]:has(.del-btn) .stButton > button * { color: #64748B !important; }
+div[data-testid="stColumn"]:has(.del-btn) .stButton > button:hover * { color: #EF4444 !important; }
 [data-testid="stDataFrame"] { border-radius: 10px !important; overflow: hidden !important; }
 th { background: #F1F5F9 !important; font-weight: 600 !important; font-size: 12px !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; color: #64748B !important; border-bottom: 2px solid #E2E8F0 !important; }
 .stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 2px solid #E2E8F0; }
