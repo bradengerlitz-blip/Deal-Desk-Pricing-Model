@@ -418,14 +418,8 @@ svg title, svg desc, svg text,
 .stApp, .block-container, header, [data-testid="stHeader"] { background: #FFFFFF !important; }
 .block-container { padding-top: 1rem !important; max-width: 1400px !important; }
 
-/* ── Kill caret / cursor in all select dropdowns ── */
-[data-baseweb="select"] input[aria-autocomplete="list"] {
-    caret-color: transparent !important;
-    cursor: pointer !important;
-}
-[data-baseweb="select"] div[data-baseweb="input"] {
-    cursor: pointer !important;
-}
+/* ── Ensure select dropdowns never show a text cursor ── */
+[data-baseweb="select"] input { caret-color: transparent !important; cursor: pointer !important; }
 #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
 
 /* ── Brand ── */
@@ -469,12 +463,14 @@ svg title, svg desc, svg text,
     overflow-wrap: break-word !important; word-wrap: break-word !important;
 }
 
-/* Text inputs */
-[data-testid="stSidebar"] input {
+/* Text inputs (exclude inputs inside selects — those cause caret bleed) */
+[data-testid="stSidebar"] [data-baseweb="input"] input,
+[data-testid="stSidebar"] [data-testid="stNumberInput"] input {
     background: #FFFFFF !important; border: 1px solid #D2D2D7 !important;
     color: #1D1D1F !important; border-radius: 8px !important; font-size: 14px !important;
 }
-[data-testid="stSidebar"] input:focus {
+[data-testid="stSidebar"] [data-baseweb="input"] input:focus,
+[data-testid="stSidebar"] [data-testid="stNumberInput"] input:focus {
     border-color: #007AFF !important;
     box-shadow: 0 0 0 3px rgba(0,122,255,0.1) !important;
 }
