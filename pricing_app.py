@@ -418,17 +418,13 @@ svg title, svg desc, svg text,
 .stApp, .block-container, header, [data-testid="stHeader"] { background: #FFFFFF !important; }
 .block-container { padding-top: 1rem !important; max-width: 1400px !important; }
 
-/* ── Kill focus rings / cursor / caret on all selects ── */
-[data-baseweb="select"] input,
-[data-baseweb="select"] [role="combobox"],
-[data-baseweb="select"] * {
+/* ── Kill caret / cursor in all select dropdowns ── */
+[data-baseweb="select"] input[aria-autocomplete="list"] {
     caret-color: transparent !important;
+    cursor: pointer !important;
 }
-[data-baseweb="select"] > div:focus-within {
-    box-shadow: none !important; outline: none !important;
-}
-input:focus, select:focus, [data-baseweb="select"] *:focus {
-    outline: none !important; box-shadow: none !important;
+[data-baseweb="select"] div[data-baseweb="input"] {
+    cursor: pointer !important;
 }
 #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
 
@@ -486,9 +482,8 @@ input:focus, select:focus, [data-baseweb="select"] *:focus {
 /* Selects / dropdowns */
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
     background: #FFFFFF !important; border-color: #D2D2D7 !important;
-    border-radius: 8px !important; caret-color: transparent !important;
+    border-radius: 8px !important;
 }
-[data-testid="stSidebar"] [data-baseweb="select"] input { caret-color: transparent !important; }
 
 /* Number steppers */
 [data-testid="stSidebar"] [data-testid="stNumberInputStepUp"],
