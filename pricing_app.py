@@ -882,10 +882,10 @@ with st.sidebar:
 
 # ── Scenarios ────────────────────────────────────────────────────────────────
 
-available_fee_names = [f.name for f in fees]
 product_names = [p["name"] for p in st.session_state.portfolio]
 products = _products_from_state()
 fees = _fees_from_state()
+available_fee_names = [f.name for f in fees]
 
 results: list[dict] = []
 scenario_cols = st.columns(num_scenarios, gap="large")
