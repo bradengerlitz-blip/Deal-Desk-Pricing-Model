@@ -798,38 +798,31 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### Products")
 
-    # Searchable product selector from catalog
-    current_names = [p["name"] for p in st.session_state.portfolio]
-    selected = st.multiselect(
-        "Search & add products",
-        options=CATALOG_NAMES,
-        default=current_names,
-        key="product_selector",
-        placeholder="Type to search...",
+    # Search-and-add: selectbox with available (not yet added) products
+    added_names = {p["name"] for p in st.session_state.portfolio}
+    available = [""] + [n for n in CATALOG_NAMES if n not in added_names]
+
+    pick = st.selectbox(
+        "Add a product",
+        options=available,
+        index=0,
+        key="product_search",
+        format_func=lambda x: "Type to search..." if x == "" else x,
     )
+    if pick:
+        cat_entry = CATALOG_LOOKUP.get(pick, {})
+        st.session_state.portfolio.append({
+            "name": pick,
+            "type": PricingType.FLAT_FEE.value,
+            "price": cat_entry.get("list_price", 0.0),
+            "list_price": cat_entry.get("list_price", 0.0),
+            "cadence": cat_entry.get("cadence", "One-Time"),
+        })
+        st.rerun()
 
-    # Sync portfolio with multiselect: add new, remove deselected
-    existing_map = {p["name"]: p for p in st.session_state.portfolio}
-    new_portfolio = []
-    for name in selected:
-        if name in existing_map:
-            new_portfolio.append(existing_map[name])
-        else:
-            cat_entry = CATALOG_LOOKUP.get(name, {})
-            list_price = cat_entry.get("list_price", 0.0)
-            cadence = cat_entry.get("cadence", "One-Time")
-            new_portfolio.append({
-                "name": name,
-                "type": PricingType.FLAT_FEE.value,
-                "price": list_price,
-                "list_price": list_price,
-                "cadence": cadence,
-            })
-    st.session_state.portfolio = new_portfolio
-
-    # Product cards with variance tracking
+    # Product cards
+    delete_prod_idx: int | None = None
     for idx, prod in enumerate(st.session_state.portfolio):
-        # Ensure list_price is stored
         if "list_price" not in prod:
             cat_entry = CATALOG_LOOKUP.get(prod["name"], {})
             prod["list_price"] = cat_entry.get("list_price", 0.0)
@@ -837,14 +830,21 @@ with st.sidebar:
                 prod["cadence"] = cat_entry.get("cadence", "One-Time")
 
         with st.container(border=True):
+            # Header row: bold name + cadence badge + delete button
             cadence = prod.get("cadence", "One-Time")
             cad_color = "#007AFF" if cadence == "Recurring" else "#86868B"
-            st.markdown(
-                f'<span style="font-size:12px;color:#1D1D1F;font-weight:500;">{prod["name"]}</span>'
-                f' <span style="font-size:10px;color:{cad_color};font-weight:600;'
-                f'text-transform:uppercase;letter-spacing:0.5px;">{cadence}</span>',
-                unsafe_allow_html=True,
-            )
+            hdr_col, del_col = st.columns([6, 1])
+            with hdr_col:
+                st.markdown(
+                    f'<span style="font-size:13px;color:#1D1D1F;font-weight:700;">{prod["name"]}</span>'
+                    f' <span style="font-size:10px;color:{cad_color};font-weight:600;'
+                    f'text-transform:uppercase;letter-spacing:0.5px;">{cadence}</span>',
+                    unsafe_allow_html=True,
+                )
+            with del_col:
+                if st.button("✕", key=f"pd_{idx}", type="secondary"):
+                    delete_prod_idx = idx
+
             type_col, price_col = st.columns(2)
             with type_col:
                 type_options = [t.value for t in PricingType]
@@ -878,6 +878,10 @@ with st.sidebar:
                     f'<span style="color:#86868B;font-size:12px;">At list price</span>',
                     unsafe_allow_html=True,
                 )
+
+    if delete_prod_idx is not None:
+        st.session_state.portfolio.pop(delete_prod_idx)
+        st.rerun()
 
 
 # ── Scenarios ────────────────────────────────────────────────────────────────
