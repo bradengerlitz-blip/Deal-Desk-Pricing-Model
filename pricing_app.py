@@ -889,9 +889,9 @@ with tabs[-2]:
     ctrl1, ctrl2 = st.columns(2)
     with ctrl1:
         base_price = st.number_input(
-            "Tier 1 Fixed Price ($)",
+            "Starting Price Per User ($)",
             value=st.session_state.pt_base_price,
-            step=1000.0,
+            step=1.0,
             min_value=0.0,
             key="pt_base_input",
             format="%.2f",
@@ -911,7 +911,7 @@ with tabs[-2]:
     # ── Tier editor ──
     st.markdown("---")
     st.markdown("**Build Your Own Grid**")
-    st.caption("Set employee ranges and the % of the prior tier's rate. Tier 1 is always fixed price.")
+    st.caption("Set employee ranges and the % of the prior tier's rate. Tier 1 uses the starting price per user.")
 
     tiers = st.session_state.pt_tiers
     delete_tier_idx: int | None = None
@@ -949,7 +949,7 @@ with tabs[-2]:
         with cols[2]:
             if i == 0:
                 st.text_input(
-                    "% of Prior Rate", value="Fixed", key=f"pt_pct_d_{i}", disabled=True,
+                    "% of Prior Rate", value="Base", key=f"pt_pct_d_{i}", disabled=True,
                     label_visibility="visible",
                 )
             else:
@@ -1000,8 +1000,8 @@ with tabs[-2]:
         users_in_tier = max(high - low + 1, 0)
 
         if i == 0:
-            rate_per_user = base_price / users_in_tier if users_in_tier > 0 else 0
-            tier_total = base_price
+            rate_per_user = base_price
+            tier_total = rate_per_user * users_in_tier
         else:
             rate_per_user = prev_rate * (tier["pct"] / 100.0)
             tier_total = users_in_tier * rate_per_user
@@ -1016,7 +1016,7 @@ with tabs[-2]:
             "Tier Total": tier_total,
             "Overall Total": overall_total,
             "Effective Rate": eff_rate,
-            "% of Prior": "Fixed" if i == 0 else f"{tier['pct']:.0f}%",
+            "% of Prior": "Base" if i == 0 else f"{tier['pct']:.0f}%",
         })
         prev_rate = rate_per_user
 
@@ -1052,7 +1052,7 @@ with tabs[-2]:
             label = f"Up to {high:,}" if i == 0 else f"{low:,} – {high:,}"
             overall = grid_rows[i]["Overall Total"]
             eff = grid_rows[i]["Effective Rate"]
-            add_users = "Fixed" if i == 0 else f"${grid_rows[i]['Price / User']:,.2f}"
+            add_users = f"${grid_rows[i]['Price / User']:,.2f}"
 
             add_rows.append({
                 "Eligible Users": label,
