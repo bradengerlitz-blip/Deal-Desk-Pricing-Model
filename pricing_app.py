@@ -87,99 +87,99 @@ DEFAULT_FEES = [Fee("Custom Integration / Migration", 0.0)]
 
 # ── Product Catalog (from Service Offerings List) ──
 PRODUCT_CATALOG: list[dict] = [
-    {"name": "Additional Custom Reports (Support)", "list_price": 275.0},
-    {"name": "Additional Custom Reports (Professional Services)", "list_price": 275.0},
-    {"name": "Additional Languages Enhancement Grants Essential/Benevity Grants", "list_price": 5500.0},
-    {"name": "Additional Languages Enhancement Grants Advanced/Versaic", "list_price": 13200.0},
-    {"name": "Additional Localized Experience - Enhancement - Implementation Fee", "list_price": 7000.0},
-    {"name": "Advanced Payroll - Enhancement - Implementation Fee", "list_price": 19320.0},
-    {"name": "Advanced Workflow", "list_price": 275.0},
-    {"name": "Adverse Media Reports", "list_price": 5000.0},
-    {"name": "Basic Payroll Giving - Enhancement - Implementation Fee", "list_price": 9000.0},
-    {"name": "Basic Workflow (up to 5 stages)", "list_price": 6600.0},
-    {"name": "Challenges Implementation", "list_price": 5000.0},
-    {"name": "Client Onsite", "list_price": 275.0},
-    {"name": "Core Implementation Service: Employee Engagement", "list_price": 0.0},
-    {"name": "Custom Budget Tags", "list_price": 8250.0},
-    {"name": "Custom Fraud Rules/Client Giving Match Protection (Review-Based)", "list_price": 20000.0},
-    {"name": "Custom Historical Data Import", "list_price": 275.0},
-    {"name": "Custom Managed Services (One-Time)", "list_price": 300.0},
-    {"name": "Custom Managed Services (Recurring)", "list_price": 300.0},
-    {"name": "Custom Reports", "list_price": 0.0},
-    {"name": "Custom Reports Enhancement", "list_price": 0.0},
-    {"name": "Data Export Implementation MFT", "list_price": 5000.0},
-    {"name": "Data Transformations - Enhancement - Implementation Fee", "list_price": 2750.0},
-    {"name": "Dedicated Phone Line (End User)", "list_price": 0.0},
-    {"name": "Donation Report Uploads", "list_price": 5000.0},
-    {"name": "Employee Engagement URL Change", "list_price": 11000.0},
-    {"name": "Employee Groups \u2013 Budget Enhancement", "list_price": 4000.0},
-    {"name": "Employee Groups \u2013 Chapters Advanced Enhancement", "list_price": 8000.0},
-    {"name": "Employee Groups \u2013 Chapters Essential Enhancement", "list_price": 4000.0},
-    {"name": "Employee Groups \u2013 SSO Enhancement - Implementation Enhancement", "list_price": 2254.0},
-    {"name": "eSignature or additional eSignatures", "list_price": 4950.0},
-    {"name": "External Match Request Reviews", "list_price": 0.0},
-    {"name": "External Portal (Up To 2 Tasks) (Inlc. Submitter Portal)", "list_price": 9625.0},
-    {"name": "External Portal Enhancement", "list_price": 0.0},
-    {"name": "Flat File Payment Integration Versaic - Setup", "list_price": 0.0},
-    {"name": "GA: Supplementary Forms Enhancement", "list_price": 8250.0},
-    {"name": "GE: Supplementary Forms Enhancement", "list_price": 6050.0},
-    {"name": "Gift of Securities", "list_price": 180000.0},
-    {"name": "Giving Implementation Fee", "list_price": 19000.0},
-    {"name": "Giving Opportunity Reviews", "list_price": 0.0},
-    {"name": "Global DAF", "list_price": 40000.0},
-    {"name": "Global Program Bundle Implementation", "list_price": 19000.0},
-    {"name": "Global Program Bundle Implementation (Existing)", "list_price": 15950.0},
-    {"name": "Grants - Advanced Program + Workflow (Grants Essential)", "list_price": 4950.0},
-    {"name": "Grants - Advanced Program + Workflow", "list_price": 14437.5},
-    {"name": "Grants - Essential Program + Workflow", "list_price": 61325.0},
-    {"name": "Grants - Essential Program + Workflow (Grants Essential)", "list_price": 32037.5},
-    {"name": "Grants - External Portal Bundle", "list_price": 8937.5},
-    {"name": "Grants Application Review Service", "list_price": 250.0},
-    {"name": "Grants Management - Implementation Package - Core", "list_price": 35725.0},
-    {"name": "Grants Management Plus Implementation", "list_price": 72540.0},
-    {"name": "Grants Management Premium Implementation", "list_price": 0.0},
-    {"name": "Grants Program Change (Minor, Medium, Complex)", "list_price": 275.0},
-    {"name": "Historical Data Import", "list_price": 0.0},
-    {"name": "HRIS Updates and/or Provider Change", "list_price": 8250.0},
-    {"name": "Implementation Consultation", "list_price": 275.0},
-    {"name": "Integrations Enhancement", "list_price": 275.0},
-    {"name": "Local Login Authentication Enhancements", "list_price": 2000.0},
-    {"name": "Merger or Acquisition", "list_price": 13750.0},
-    {"name": "Modified Donation Report", "list_price": 5750.0},
-    {"name": "Nonprofit Curation", "list_price": 1500.0},
-    {"name": "Nonprofit Mission & Operations Screening", "list_price": 1600.0},
-    {"name": "Off Cycle Disbursement", "list_price": 2500.0},
-    {"name": "Organization and Key Personnel Screening", "list_price": 875.0},
-    {"name": "Plus Implementation Service: Employee Engagement", "list_price": 0.0},
-    {"name": "Plus Implementation Service: Employee Groups", "list_price": 0.0},
-    {"name": "Post Approval Activities (Incl. Impact Report)", "list_price": 8250.0},
-    {"name": "Premium Implementation Service: Employee Engagement", "list_price": 0.0},
-    {"name": "Premium Implementation Service: Employee Groups", "list_price": 0.0},
-    {"name": "Premium Nonprofit Screening", "list_price": 3200.0},
-    {"name": "Premium Service Level Agreement (Client Admin)", "list_price": 0.0},
-    {"name": "Premium Service Level Agreement (End User)", "list_price": 0.0},
-    {"name": "Primary Forms Enhancement (All types)", "list_price": 8250.0},
-    {"name": "Project Management - Enhancement - Implementation Fee", "list_price": 275.0},
-    {"name": "Reversal", "list_price": 250.0},
-    {"name": "Secular Process Review", "list_price": 62.5},
-    {"name": "Service Reserve Units", "list_price": 500.0},
-    {"name": "Site Consolidation", "list_price": 21000.0},
-    {"name": "SSO Enhancement", "list_price": 2250.0},
-    {"name": "Technical Account Manager (TAM)", "list_price": 0.0},
-    {"name": "Technical Audit", "list_price": 0.0},
-    {"name": "Technical Consultation - Grants Management", "list_price": 275.0},
-    {"name": "Technical Program Consultation", "list_price": 12075.0},
-    {"name": "User Data File Enhancements", "list_price": 275.0},
-    {"name": "Volunteer Opportunity Reviews", "list_price": 0.0},
-    {"name": "Volunteer Rewards Implementation Fee", "list_price": 9625.0},
-    {"name": "Volunteer Time Reviews", "list_price": 0.0},
-    {"name": "Volunteering Implementation Fee", "list_price": 9625.0},
-    {"name": "Workday Integration Implementation Service", "list_price": 5200.0},
-    {"name": "Workday Integration - Payroll Only", "list_price": 9000.0},
-    {"name": "Workday Integration - User Data and Payroll", "list_price": 22000.0},
-    {"name": "Workday Integration - User Data Only", "list_price": 13000.0},
+    {"name": "Additional Custom Reports (Support)", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Additional Custom Reports (Professional Services)", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Additional Languages Enhancement Grants Essential/Benevity Grants", "list_price": 5500.0, "cadence": "One-Time"},
+    {"name": "Additional Languages Enhancement Grants Advanced/Versaic", "list_price": 13200.0, "cadence": "One-Time"},
+    {"name": "Additional Localized Experience - Enhancement - Implementation Fee", "list_price": 7000.0, "cadence": "One-Time"},
+    {"name": "Advanced Payroll - Enhancement - Implementation Fee", "list_price": 19320.0, "cadence": "One-Time"},
+    {"name": "Advanced Workflow", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Adverse Media Reports", "list_price": 5000.0, "cadence": "Recurring"},
+    {"name": "Basic Payroll Giving - Enhancement - Implementation Fee", "list_price": 9000.0, "cadence": "One-Time"},
+    {"name": "Basic Workflow (up to 5 stages)", "list_price": 6600.0, "cadence": "One-Time"},
+    {"name": "Challenges Implementation", "list_price": 5000.0, "cadence": "One-Time"},
+    {"name": "Client Onsite", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Core Implementation Service: Employee Engagement", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Custom Budget Tags", "list_price": 8250.0, "cadence": "One-Time"},
+    {"name": "Custom Fraud Rules/Client Giving Match Protection (Review-Based)", "list_price": 20000.0, "cadence": "Recurring"},
+    {"name": "Custom Historical Data Import", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Custom Managed Services (One-Time)", "list_price": 300.0, "cadence": "One-Time"},
+    {"name": "Custom Managed Services (Recurring)", "list_price": 300.0, "cadence": "Recurring"},
+    {"name": "Custom Reports", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Custom Reports Enhancement", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Data Export Implementation MFT", "list_price": 5000.0, "cadence": "One-Time"},
+    {"name": "Data Transformations - Enhancement - Implementation Fee", "list_price": 2750.0, "cadence": "One-Time"},
+    {"name": "Dedicated Phone Line (End User)", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Donation Report Uploads", "list_price": 5000.0, "cadence": "Recurring"},
+    {"name": "Employee Engagement URL Change", "list_price": 11000.0, "cadence": "One-Time"},
+    {"name": "Employee Groups \u2013 Budget Enhancement", "list_price": 4000.0, "cadence": "One-Time"},
+    {"name": "Employee Groups \u2013 Chapters Advanced Enhancement", "list_price": 8000.0, "cadence": "One-Time"},
+    {"name": "Employee Groups \u2013 Chapters Essential Enhancement", "list_price": 4000.0, "cadence": "One-Time"},
+    {"name": "Employee Groups \u2013 SSO Enhancement - Implementation Enhancement", "list_price": 2254.0, "cadence": "One-Time"},
+    {"name": "eSignature or additional eSignatures", "list_price": 4950.0, "cadence": "One-Time"},
+    {"name": "External Match Request Reviews", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "External Portal (Up To 2 Tasks) (Inlc. Submitter Portal)", "list_price": 9625.0, "cadence": "One-Time"},
+    {"name": "External Portal Enhancement", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Flat File Payment Integration Versaic - Setup", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "GA: Supplementary Forms Enhancement", "list_price": 8250.0, "cadence": "One-Time"},
+    {"name": "GE: Supplementary Forms Enhancement", "list_price": 6050.0, "cadence": "One-Time"},
+    {"name": "Gift of Securities", "list_price": 180000.0, "cadence": "Recurring"},
+    {"name": "Giving Implementation Fee", "list_price": 19000.0, "cadence": "One-Time"},
+    {"name": "Giving Opportunity Reviews", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Global DAF", "list_price": 40000.0, "cadence": "Recurring"},
+    {"name": "Global Program Bundle Implementation", "list_price": 19000.0, "cadence": "One-Time"},
+    {"name": "Global Program Bundle Implementation (Existing)", "list_price": 15950.0, "cadence": "One-Time"},
+    {"name": "Grants - Advanced Program + Workflow (Grants Essential)", "list_price": 4950.0, "cadence": "One-Time"},
+    {"name": "Grants - Advanced Program + Workflow", "list_price": 14437.5, "cadence": "One-Time"},
+    {"name": "Grants - Essential Program + Workflow", "list_price": 61325.0, "cadence": "One-Time"},
+    {"name": "Grants - Essential Program + Workflow (Grants Essential)", "list_price": 32037.5, "cadence": "One-Time"},
+    {"name": "Grants - External Portal Bundle", "list_price": 8937.5, "cadence": "One-Time"},
+    {"name": "Grants Application Review Service", "list_price": 250.0, "cadence": "Recurring"},
+    {"name": "Grants Management - Implementation Package - Core", "list_price": 35725.0, "cadence": "One-Time"},
+    {"name": "Grants Management Plus Implementation", "list_price": 72540.0, "cadence": "One-Time"},
+    {"name": "Grants Management Premium Implementation", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Grants Program Change (Minor, Medium, Complex)", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Historical Data Import", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "HRIS Updates and/or Provider Change", "list_price": 8250.0, "cadence": "One-Time"},
+    {"name": "Implementation Consultation", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Integrations Enhancement", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Local Login Authentication Enhancements", "list_price": 2000.0, "cadence": "One-Time"},
+    {"name": "Merger or Acquisition", "list_price": 13750.0, "cadence": "One-Time"},
+    {"name": "Modified Donation Report", "list_price": 5750.0, "cadence": "Recurring"},
+    {"name": "Nonprofit Curation", "list_price": 1500.0, "cadence": "One-Time"},
+    {"name": "Nonprofit Mission & Operations Screening", "list_price": 1600.0, "cadence": "Recurring"},
+    {"name": "Off Cycle Disbursement", "list_price": 2500.0, "cadence": "One-Time"},
+    {"name": "Organization and Key Personnel Screening", "list_price": 875.0, "cadence": "Recurring"},
+    {"name": "Plus Implementation Service: Employee Engagement", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Plus Implementation Service: Employee Groups", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Post Approval Activities (Incl. Impact Report)", "list_price": 8250.0, "cadence": "One-Time"},
+    {"name": "Premium Implementation Service: Employee Engagement", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Premium Implementation Service: Employee Groups", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Premium Nonprofit Screening", "list_price": 3200.0, "cadence": "Recurring"},
+    {"name": "Premium Service Level Agreement (Client Admin)", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Premium Service Level Agreement (End User)", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Primary Forms Enhancement (All types)", "list_price": 8250.0, "cadence": "One-Time"},
+    {"name": "Project Management - Enhancement - Implementation Fee", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Reversal", "list_price": 250.0, "cadence": "One-Time"},
+    {"name": "Secular Process Review", "list_price": 62.5, "cadence": "Recurring"},
+    {"name": "Service Reserve Units", "list_price": 500.0, "cadence": "One-Time"},
+    {"name": "Site Consolidation", "list_price": 21000.0, "cadence": "One-Time"},
+    {"name": "SSO Enhancement", "list_price": 2250.0, "cadence": "One-Time"},
+    {"name": "Technical Account Manager (TAM)", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Technical Audit", "list_price": 0.0, "cadence": "One-Time"},
+    {"name": "Technical Consultation - Grants Management", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Technical Program Consultation", "list_price": 12075.0, "cadence": "One-Time"},
+    {"name": "User Data File Enhancements", "list_price": 275.0, "cadence": "One-Time"},
+    {"name": "Volunteer Opportunity Reviews", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Volunteer Rewards Implementation Fee", "list_price": 9625.0, "cadence": "One-Time"},
+    {"name": "Volunteer Time Reviews", "list_price": 0.0, "cadence": "Recurring"},
+    {"name": "Volunteering Implementation Fee", "list_price": 9625.0, "cadence": "One-Time"},
+    {"name": "Workday Integration Implementation Service", "list_price": 5200.0, "cadence": "One-Time"},
+    {"name": "Workday Integration - Payroll Only", "list_price": 9000.0, "cadence": "One-Time"},
+    {"name": "Workday Integration - User Data and Payroll", "list_price": 22000.0, "cadence": "One-Time"},
+    {"name": "Workday Integration - User Data Only", "list_price": 13000.0, "cadence": "One-Time"},
 ]
-CATALOG_LOOKUP: dict[str, float] = {p["name"]: p["list_price"] for p in PRODUCT_CATALOG}
+CATALOG_LOOKUP: dict[str, dict] = {p["name"]: p for p in PRODUCT_CATALOG}
 CATALOG_NAMES: list[str] = [p["name"] for p in PRODUCT_CATALOG]
 DEFAULT_USERS = 0
 
@@ -722,9 +722,7 @@ def _init_state() -> None:
             for p in DEFAULT_PRODUCTS
         ]
     if "one_time_fees" not in st.session_state:
-        st.session_state.one_time_fees = [
-            {"name": f.name, "price": f.price} for f in DEFAULT_FEES
-        ]
+        st.session_state.one_time_fees = []
     for idx, cfg in enumerate(SCENARIO_DEFAULTS):
         defaults = {
             f"s_term_{idx}": cfg.term,
@@ -746,14 +744,21 @@ _init_state()
 
 
 def _products_from_state() -> list[Product]:
+    """Recurring products contribute to ARR every year."""
     return [
         Product(p["name"], PricingType(p["type"]), p["price"])
         for p in st.session_state.portfolio
+        if p.get("cadence", "One-Time") == "Recurring"
     ]
 
 
 def _fees_from_state() -> list[Fee]:
-    return [Fee(f["name"], f["price"]) for f in st.session_state.one_time_fees]
+    """One-time products are treated as fees (Year 1 only)."""
+    return [
+        Fee(p["name"], p["price"])
+        for p in st.session_state.portfolio
+        if p.get("cadence", "One-Time") == "One-Time"
+    ]
 
 
 # ── Sidebar ──────────────────────────────────────────────────────────────────
@@ -789,39 +794,6 @@ with st.sidebar:
         )
         user_ramp = [int(u) for u in user_ramp]
 
-    # ── One-Time Fees ──
-    st.markdown("---")
-    st.markdown("### One-Time Fees")
-
-    delete_fee_idx: int | None = None
-    for idx, fee in enumerate(st.session_state.one_time_fees):
-        with st.container(border=True):
-            name_col, del_col = st.columns([6, 1])
-            with name_col:
-                fee["name"] = st.text_input(
-                    "Fee Name", value=fee["name"], key=f"fn_{idx}", label_visibility="collapsed"
-                )
-            with del_col:
-                if st.button("✕", key=f"fd_{idx}", type="secondary"):
-                    delete_fee_idx = idx
-            fee["price"] = st.number_input(
-                "Price ($)", value=fee["price"], key=f"fp_{idx}", format="%.0f", min_value=0.0
-            )
-
-    if delete_fee_idx is not None:
-        st.session_state.one_time_fees.pop(delete_fee_idx)
-        st.rerun()
-
-    add_col, clear_col = st.columns(2)
-    with add_col:
-        if st.button("＋ Add Fee", key="add_fee", use_container_width=True):
-            st.session_state.one_time_fees.append({"name": "New Fee", "price": 0.0})
-            st.rerun()
-    with clear_col:
-        if st.button("Clear All", key="clr_fee", use_container_width=True):
-            st.session_state.one_time_fees = []
-            st.rerun()
-
     # ── Products ──
     st.markdown("---")
     st.markdown("### Products")
@@ -843,12 +815,15 @@ with st.sidebar:
         if name in existing_map:
             new_portfolio.append(existing_map[name])
         else:
-            list_price = CATALOG_LOOKUP.get(name, 0.0)
+            cat_entry = CATALOG_LOOKUP.get(name, {})
+            list_price = cat_entry.get("list_price", 0.0)
+            cadence = cat_entry.get("cadence", "One-Time")
             new_portfolio.append({
                 "name": name,
                 "type": PricingType.FLAT_FEE.value,
                 "price": list_price,
                 "list_price": list_price,
+                "cadence": cadence,
             })
     st.session_state.portfolio = new_portfolio
 
@@ -856,10 +831,20 @@ with st.sidebar:
     for idx, prod in enumerate(st.session_state.portfolio):
         # Ensure list_price is stored
         if "list_price" not in prod:
-            prod["list_price"] = CATALOG_LOOKUP.get(prod["name"], 0.0)
+            cat_entry = CATALOG_LOOKUP.get(prod["name"], {})
+            prod["list_price"] = cat_entry.get("list_price", 0.0)
+            if "cadence" not in prod:
+                prod["cadence"] = cat_entry.get("cadence", "One-Time")
 
         with st.container(border=True):
-            st.caption(prod["name"])
+            cadence = prod.get("cadence", "One-Time")
+            cad_color = "#007AFF" if cadence == "Recurring" else "#86868B"
+            st.markdown(
+                f'<span style="font-size:12px;color:#1D1D1F;font-weight:500;">{prod["name"]}</span>'
+                f' <span style="font-size:10px;color:{cad_color};font-weight:600;'
+                f'text-transform:uppercase;letter-spacing:0.5px;">{cadence}</span>',
+                unsafe_allow_html=True,
+            )
             type_col, price_col = st.columns(2)
             with type_col:
                 type_options = [t.value for t in PricingType]
@@ -897,7 +882,7 @@ with st.sidebar:
 
 # ── Scenarios ────────────────────────────────────────────────────────────────
 
-available_fee_names = [f["name"] for f in st.session_state.one_time_fees]
+available_fee_names = [f.name for f in fees]
 product_names = [p["name"] for p in st.session_state.portfolio]
 products = _products_from_state()
 fees = _fees_from_state()
@@ -945,7 +930,7 @@ for scene_idx, col in enumerate(scenario_cols):
 
         valid_added = [f for f in st.session_state[f"s_add_{scene_idx}"] if f in available_fee_names]
         added = st.multiselect(
-            "One-Time Fees", options=available_fee_names, default=valid_added, key=f"wa_{scene_idx}"
+            "One-Time Products", options=available_fee_names, default=valid_added, key=f"wa_{scene_idx}"
         )
         st.session_state[f"s_add_{scene_idx}"] = added
 
