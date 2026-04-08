@@ -440,7 +440,8 @@ svg title, svg desc, svg text,
 
 /* ═══ SIDEBAR ═══ */
 [data-testid="stSidebar"] { background: #F5F5F7 !important; border-right: 1px solid #E5E5EA !important; }
-[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding: 24px 16px !important; }
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding: 8px 16px !important; }
+[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] { padding-top: 0 !important; }
 
 /* Section headers */
 [data-testid="stSidebar"] .stMarkdown h3 {
