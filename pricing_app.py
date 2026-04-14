@@ -658,11 +658,17 @@ svg title, svg desc, svg text,
 
 /* ═══ MAIN AREA ═══ */
 
+/* Ensure columns don't clip button content */
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"] {
+    overflow: visible !important;
+}
+
 /* Primary buttons */
 .stButton > button {
     background: #007AFF !important; color: #FFF !important;
     border: none !important; font-weight: 500 !important; border-radius: 8px !important;
     font-size: 14px !important; padding: 8px 20px !important;
+    white-space: nowrap !important;
 }
 .stButton > button:hover { background: #0066CC !important; transform: none !important; }
 .stButton > button * { color: #FFF !important; }
@@ -739,7 +745,7 @@ th {
 st.set_page_config(page_title="Deal Desk Modeler", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
 
-_header_left, _header_right = st.columns([6, 1])
+_header_left, _header_right = st.columns([4, 1])
 with _header_left:
     st.markdown(
         '<div class="brand">'
@@ -750,7 +756,6 @@ with _header_left:
         unsafe_allow_html=True,
     )
 with _header_right:
-    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
     if st.button("↺ Reset", key="btn_reset"):
         _reset_all()
         st.rerun()
