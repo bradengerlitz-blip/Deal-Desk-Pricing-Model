@@ -817,6 +817,12 @@ def _reset_all() -> None:
     keys_to_clear = [k for k in st.session_state.keys()]
     for k in keys_to_clear:
         del st.session_state[k]
+    # Force widget keys to defaults so Streamlit doesn't restore cached values
+    for idx in range(5):
+        st.session_state[f"fu_{idx}"] = 0
+        st.session_state[f"vt_{idx}"] = False
+        for yr in range(MAX_TERM):
+            st.session_state[f"vu_{idx}_{yr}"] = 0
     _init_state()
 
 
