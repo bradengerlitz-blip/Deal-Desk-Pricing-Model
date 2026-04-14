@@ -738,14 +738,22 @@ th {
 
 st.set_page_config(page_title="Deal Desk Modeler", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
-st.markdown(
-    '<div class="brand">'
-    '<span class="brand-logo">Deal Desk</span>'
-    '<span class="brand-divider"></span>'
-    '<span class="brand-sub">Pricing Modeler</span>'
-    "</div>",
-    unsafe_allow_html=True,
-)
+
+_header_left, _header_right = st.columns([8, 1])
+with _header_left:
+    st.markdown(
+        '<div class="brand">'
+        '<span class="brand-logo">Deal Desk</span>'
+        '<span class="brand-divider"></span>'
+        '<span class="brand-sub">Pricing Modeler</span>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+with _header_right:
+    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+    if st.button("↺ Reset", key="btn_reset", type="secondary"):
+        _reset_all()
+        st.rerun()
 
 
 # ── Session State ────────────────────────────────────────────────────────────
@@ -759,6 +767,23 @@ def _init_state() -> None:
         ]
     if "one_time_fees" not in st.session_state:
         st.session_state.one_time_fees = []
+
+    # Sidebar globals
+    sidebar_defaults: dict = {
+        "g_num_scenarios": 2,
+        "g_growth_model": "Flat",
+        "g_flat_users": DEFAULT_USERS,
+        "g_ramp_yrs": 3,
+    }
+    for key, value in sidebar_defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+    # Ramp year inputs
+    for yr in range(MAX_TERM):
+        k = f"g_ramp_{yr}"
+        if k not in st.session_state:
+            st.session_state[k] = DEFAULT_USERS
+
     for idx, cfg in enumerate(SCENARIO_DEFAULTS):
         defaults = {
             f"s_term_{idx}": cfg.term,
@@ -767,10 +792,38 @@ def _init_state() -> None:
             f"s_mode_{idx}": cfg.mode.value,
             f"s_add_{idx}": list(cfg.added_fees),
             f"s_ledger_{idx}": empty_discount_ledger(),
+            f"s_products_{idx}": None,
+            f"s_target_{idx}": 250_000.0,
+            f"s_var_uplift_{idx}": False,
+            f"s_flat_uplift_{idx}": 0,
         }
         for key, value in defaults.items():
             if key not in st.session_state:
                 st.session_state[key] = value
+    # Ensure keys exist for any scenario index beyond the defaults list
+    for idx in range(5):
+        for key, value in {
+            f"s_term_{idx}": 3,
+            f"s_name_{idx}": f"Scenario {idx + 1}",
+            f"s_pay_{idx}": "Upfront (0 Days)",
+            f"s_mode_{idx}": UpliftMode.MANUAL.value,
+            f"s_add_{idx}": [],
+            f"s_ledger_{idx}": empty_discount_ledger(),
+            f"s_products_{idx}": None,
+            f"s_target_{idx}": 250_000.0,
+            f"s_var_uplift_{idx}": False,
+            f"s_flat_uplift_{idx}": 0,
+        }.items():
+            if key not in st.session_state:
+                st.session_state[key] = value
+
+
+def _reset_all() -> None:
+    """Wipe all app state back to defaults."""
+    keys_to_clear = [k for k in st.session_state.keys()]
+    for k in keys_to_clear:
+        del st.session_state[k]
+    _init_state()
 
 
 _init_state()
@@ -779,21 +832,25 @@ _init_state()
 # ── Converters ───────────────────────────────────────────────────────────────
 
 
-def _products_from_state() -> list[Product]:
-    """Recurring products contribute to ARR every year."""
+def _products_from_state(active_names: list[str] | None = None) -> list[Product]:
+    """Recurring products contribute to ARR every year.
+    If active_names is provided, only include products in that list."""
     return [
         Product(p["name"], PricingType(p["type"]), p["price"])
         for p in st.session_state.portfolio
         if p.get("cadence", "One-Time") == "Recurring"
+        and (active_names is None or p["name"] in active_names)
     ]
 
 
-def _fees_from_state() -> list[Fee]:
-    """One-time products are treated as fees (Year 1 only)."""
+def _fees_from_state(active_names: list[str] | None = None) -> list[Fee]:
+    """One-time products are treated as fees (Year 1 only).
+    If active_names is provided, only include products in that list."""
     return [
         Fee(p["name"], p["price"])
         for p in st.session_state.portfolio
         if p.get("cadence", "One-Time") == "One-Time"
+        and (active_names is None or p["name"] in active_names)
     ]
 
 
@@ -801,28 +858,33 @@ def _fees_from_state() -> list[Fee]:
 
 with st.sidebar:
     st.markdown("### Deal Setup")
-    num_scenarios = st.selectbox("Scenarios", options=[1, 2, 3, 4, 5], index=1)
+    num_scenarios = st.selectbox(
+        "Scenarios", options=[1, 2, 3, 4, 5],
+        index=[1, 2, 3, 4, 5].index(st.session_state.g_num_scenarios),
+        key="g_num_scenarios",
+    )
 
     st.markdown("---")
     st.markdown("### Users")
     growth = st.radio(
-        "Model", ["Flat", "Custom Ramp"], horizontal=True, label_visibility="collapsed"
+        "Model", ["Flat", "Custom Ramp"], horizontal=True,
+        label_visibility="collapsed", key="g_growth_model",
     )
 
     if growth == "Flat":
         flat_users = st.number_input(
-            "Users (all years)", value=DEFAULT_USERS, step=100, min_value=0
+            "Users (all years)", step=100, min_value=0, key="g_flat_users",
         )
         user_ramp = [flat_users] * MAX_TERM
     else:
-        ramp_years = st.slider("Years", 1, MAX_TERM, 3, key="ramp_yrs")
+        ramp_years = st.slider("Years", 1, MAX_TERM, key="g_ramp_yrs")
         ramp_values: list[int] = []
         col_a, col_b = st.columns(2)
         for yr in range(ramp_years):
             with col_a if yr % 2 == 0 else col_b:
                 ramp_values.append(
                     st.number_input(
-                        f"Yr {yr + 1}", value=DEFAULT_USERS, step=100, min_value=0, key=f"ramp_{yr}"
+                        f"Yr {yr + 1}", step=100, min_value=0, key=f"g_ramp_{yr}"
                     )
                 )
         user_ramp = pad_to_term(
@@ -834,12 +896,37 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### Products")
 
-    # Search-and-add: selectbox with available (not yet added) products
+    # ── Custom product form (always visible at top) ──
+    with st.expander("＋ Add custom product", expanded=False):
+        cp_name = st.text_input("Name", key="cp_name", placeholder="e.g. Professional Services")
+        cp_cad_col, cp_type_col = st.columns(2)
+        with cp_cad_col:
+            cp_cadence = st.selectbox("Cadence", ["Recurring", "One-Time"], key="cp_cadence")
+        with cp_type_col:
+            cp_type = st.selectbox("Pricing", [t.value for t in PricingType], key="cp_type")
+        cp_price = st.number_input("Price ($)", value=0.0, min_value=0.0, format="%.2f", key="cp_price")
+        if st.button("Add custom product", key="cp_add"):
+            if not cp_name.strip():
+                st.error("Name required.")
+            elif cp_name.strip() in {p["name"] for p in st.session_state.portfolio}:
+                st.error("A product with that name already exists.")
+            else:
+                st.session_state.portfolio.append({
+                    "name": cp_name.strip(),
+                    "type": cp_type,
+                    "price": cp_price,
+                    "list_price": cp_price,
+                    "cadence": cp_cadence,
+                    "custom": True,
+                })
+                st.rerun()
+
+    # ── Catalog search-and-add ──
     added_names = {p["name"] for p in st.session_state.portfolio}
     available = [""] + [n for n in CATALOG_NAMES if n not in added_names]
 
     pick = st.selectbox(
-        "Add a product",
+        "Add from catalog",
         options=available,
         index=0,
         key="product_search",
@@ -922,9 +1009,6 @@ with st.sidebar:
 # ── Scenarios ────────────────────────────────────────────────────────────────
 
 product_names = [p["name"] for p in st.session_state.portfolio]
-products = _products_from_state()
-fees = _fees_from_state()
-available_fee_names = [f.name for f in fees]
 
 results: list[dict] = []
 scenario_cols = st.columns(num_scenarios, gap="large")
@@ -967,16 +1051,53 @@ for scene_idx, col in enumerate(scenario_cols):
             mode = st.selectbox("Mode", mode_options, index=mode_index, key=f"wm_{scene_idx}")
             st.session_state[f"s_mode_{scene_idx}"] = mode
 
+        # ── Per-scenario product selection ──
+        if product_names:
+            # Resolve stored selection — prune any names no longer in the portfolio
+            stored_sel: list[str] | None = st.session_state.get(f"s_products_{scene_idx}")
+            if stored_sel is None:
+                resolved_sel = product_names[:]
+            else:
+                resolved_sel = [n for n in stored_sel if n in product_names]
+
+            st.markdown(
+                '<span style="font-size:11px;font-weight:600;text-transform:uppercase;'
+                'letter-spacing:0.8px;color:#86868B;">Products</span>',
+                unsafe_allow_html=True,
+            )
+            new_sel: list[str] = []
+            for pname in product_names:
+                checked = st.checkbox(
+                    pname,
+                    value=(pname in resolved_sel),
+                    key=f"sprod_{scene_idx}_{pname}",
+                )
+                if checked:
+                    new_sel.append(pname)
+            st.session_state[f"s_products_{scene_idx}"] = new_sel
+            active_product_names: list[str] | None = new_sel if new_sel != product_names else None
+        else:
+            new_sel = []
+            active_product_names = None
+
+        # Build scenario-specific products and fees
+        products = _products_from_state(active_product_names)
+        fees = _fees_from_state(active_product_names)
+        available_fee_names = [f.name for f in fees]
+
         # All one-time products auto-included in Year 1
         added = available_fee_names
 
         payment_days = PAY_TERMS[payment]
         ledger = st.session_state[f"s_ledger_{scene_idx}"]
 
+        # Discount ledger uses only the products active in this scenario
+        scenario_product_names = (new_sel if product_names else [])
+
         with st.expander("Custom Line-Item Discounts", expanded=False):
             ledger_config = {
                 "Year": st.column_config.NumberColumn("Year", min_value=1, max_value=MAX_TERM, step=1, required=True),
-                "Product": st.column_config.SelectboxColumn("Product", options=product_names, required=True),
+                "Product": st.column_config.SelectboxColumn("Product", options=scenario_product_names, required=True),
                 "Discount (%)": st.column_config.NumberColumn("%", min_value=0.0, max_value=100.0, step=0.1, required=True),
             }
             ledger = st.data_editor(
@@ -989,13 +1110,9 @@ for scene_idx, col in enumerate(scenario_cols):
         uplifts: list[float] = []
 
         if mode == UpliftMode.GOAL_SEEK.value:
-            if f"s_target_{scene_idx}" not in st.session_state:
-                st.session_state[f"s_target_{scene_idx}"] = 250_000.0
             target = st.number_input(
-                "Target TCV ($)", value=st.session_state[f"s_target_{scene_idx}"],
-                step=1000.0, key=f"wtv_{scene_idx}", min_value=0.0,
+                "Target TCV ($)", step=1000.0, min_value=0.0, key=f"s_target_{scene_idx}",
             )
-            st.session_state[f"s_target_{scene_idx}"] = target
 
             if not products:
                 st.warning("Add a product first.")
