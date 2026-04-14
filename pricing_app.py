@@ -638,7 +638,7 @@ svg title, svg desc, svg text,
 }
 [data-testid="stSidebar"] .stButton > button * { color: #007AFF !important; }
 
-/* Sidebar delete (✕) buttons */
+/* Sidebar delete (✕) buttons — red hover for destructive action */
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
     background: transparent !important; border: 1px solid #D2D2D7 !important;
     color: #AEAEB2 !important; padding: 2px 8px !important; min-height: 0 !important;
@@ -667,18 +667,18 @@ svg title, svg desc, svg text,
 .stButton > button:hover { background: #0066CC !important; transform: none !important; }
 .stButton > button * { color: #FFF !important; }
 
-/* Secondary buttons (✕ in main area) */
+/* Secondary buttons (neutral style — no red hover) */
 [data-testid="stBaseButton-secondary"] {
-    background: transparent !important; color: #AEAEB2 !important;
+    background: transparent !important; color: #86868B !important;
     border: 1px solid #E5E5EA !important; border-radius: 6px !important;
     padding: 2px 10px !important; font-size: 13px !important;
     min-height: 0 !important; box-shadow: none !important;
 }
 [data-testid="stBaseButton-secondary"]:hover {
-    background: #FFF0F0 !important; border-color: #FFD4D4 !important;
+    background: #F5F5F7 !important; border-color: #D2D2D7 !important;
 }
-[data-testid="stBaseButton-secondary"] * { color: #AEAEB2 !important; }
-[data-testid="stBaseButton-secondary"]:hover * { color: #FF3B30 !important; }
+[data-testid="stBaseButton-secondary"] * { color: #86868B !important; }
+[data-testid="stBaseButton-secondary"]:hover * { color: #1D1D1F !important; }
 
 /* Main area text inputs & selects */
 [data-baseweb="select"] > div { border-radius: 8px !important; }
@@ -739,7 +739,7 @@ th {
 st.set_page_config(page_title="Deal Desk Modeler", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
 
-_header_left, _header_right = st.columns([8, 1])
+_header_left, _header_right = st.columns([6, 1])
 with _header_left:
     st.markdown(
         '<div class="brand">'
@@ -751,7 +751,7 @@ with _header_left:
     )
 with _header_right:
     st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
-    if st.button("↺ Reset", key="btn_reset", type="secondary"):
+    if st.button("↺ Reset", key="btn_reset"):
         _reset_all()
         st.rerun()
 
