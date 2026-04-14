@@ -89,11 +89,21 @@ DEFAULT_FEES = [Fee("Custom Integration / Migration", 0.0)]
 def _load_catalog() -> list[dict]:
     """Load product catalog from JSON file next to this script."""
     import json as _json
-    catalog_path = Path(__file__).parent / "product_catalog.json"
-    if catalog_path.exists():
-        with open(catalog_path, "r") as f:
-            return _json.load(f)
-    return []  # graceful fallback if file missing
+    import os as _os
+    candidates = [
+        Path(__file__).resolve().parent / "product_catalog.json",
+        Path.cwd() / "product_catalog.json",
+        Path(_os.path.dirname(_os.path.abspath(__file__))) / "product_catalog.json",
+    ]
+    for p in candidates:
+        print(f"[catalog] checking: {p}  exists={p.exists()}")
+        if p.exists():
+            with open(p, "r") as f:
+                data = _json.load(f)
+            print(f"[catalog] loaded {len(data)} products from {p}")
+            return data
+    print("[catalog] ERROR: product_catalog.json not found in any candidate path")
+    return []
 
 PRODUCT_CATALOG: list[dict] = _load_catalog()
 CATALOG_LOOKUP: dict[str, dict] = {p["name"]: p for p in PRODUCT_CATALOG}
