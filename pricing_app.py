@@ -658,11 +658,6 @@ svg title, svg desc, svg text,
 
 /* ═══ MAIN AREA ═══ */
 
-/* Ensure columns don't clip button content */
-[data-testid="stHorizontalBlock"] [data-testid="stColumn"] {
-    overflow: visible !important;
-}
-
 /* Primary buttons */
 .stButton > button {
     background: #007AFF !important; color: #FFF !important;
@@ -745,20 +740,14 @@ th {
 st.set_page_config(page_title="Deal Desk Modeler", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
 
-_header_left, _header_right = st.columns([4, 1])
-with _header_left:
-    st.markdown(
-        '<div class="brand">'
-        '<span class="brand-logo">Deal Desk</span>'
-        '<span class="brand-divider"></span>'
-        '<span class="brand-sub">Pricing Modeler</span>'
-        "</div>",
-        unsafe_allow_html=True,
-    )
-with _header_right:
-    if st.button("↺ Reset", key="btn_reset"):
-        _reset_all()
-        st.rerun()
+st.markdown(
+    '<div class="brand">'
+    '<span class="brand-logo">Deal Desk</span>'
+    '<span class="brand-divider"></span>'
+    '<span class="brand-sub">Pricing Modeler</span>'
+    "</div>",
+    unsafe_allow_html=True,
+)
 
 
 # ── Session State ────────────────────────────────────────────────────────────
@@ -862,6 +851,10 @@ def _fees_from_state(active_names: list[str] | None = None) -> list[Fee]:
 # ── Sidebar ──────────────────────────────────────────────────────────────────
 
 with st.sidebar:
+    if st.button("↺ Reset All", key="btn_reset"):
+        _reset_all()
+        st.rerun()
+    st.markdown("---")
     st.markdown("### Deal Setup")
     num_scenarios = st.selectbox(
         "Scenarios", options=[1, 2, 3, 4, 5],
